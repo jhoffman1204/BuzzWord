@@ -3,10 +3,11 @@ package gui;
 import apptemplate.AppTemplate;
 import components.AppWorkspaceComponent;
 import controller.HangmanController;
-import controller.loginHandler;
+import controller.CreateUserHandler;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -55,6 +56,10 @@ public class Workspace extends AppWorkspaceComponent {
     Label       gameModeLabel;
     Button      startGame;
 
+    String currentUserName;
+    String currentPassword;
+
+
     String userName;
     WorkspaceNodeInitialization node = new WorkspaceNodeInitialization();
     HangmanController controller;
@@ -85,9 +90,18 @@ public class Workspace extends AppWorkspaceComponent {
         return menuPane;
     }
 
+    public String getCurrentUserName()
+    {
+        return this.currentUserName;
+    }
+    public String getCurrentPassword()
+    {
+        return this.currentPassword;
+    }
     public void setMenuPane(VBox menuPane) {
         this.menuPane = menuPane;
     }
+
 
     private void layoutGUI() {
         try {
@@ -145,7 +159,14 @@ public class Workspace extends AppWorkspaceComponent {
 
                 }
             });
-
+            viewHelpButton.setOnAction(event -> {
+                try {
+                   // controller.generateRandomWordFromFile("CountriesVocab",35);
+                    controller.generateRandomWordFromFile("AnimalsVocab",135);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
             changeColorButton.setOnAction(event -> randomizeColorPalette());
             logoutButton.setOnAction(event -> {
                 loginScreen();
@@ -158,8 +179,6 @@ public class Workspace extends AppWorkspaceComponent {
                 menuPane.getChildren().addAll(exitButton,homeButton);
                 gamePlayPane.getChildren().addAll(createAccount);
             });
-            loginHandler handler = new loginHandler(app,this);
-            loginButton.setOnAction(handler);
             loginButton.setOnAction(event ->
             {
                 gamePlayPane.getChildren().clear();
@@ -184,6 +203,7 @@ public class Workspace extends AppWorkspaceComponent {
 
             titlePane.setMargin(   gameModeLabel, new Insets(0,0,0,200));
             gamePlayPane.setMargin(createAccount, new Insets(0,0,0,200));
+            gamePlayPane.setMargin(loginAccount, new Insets(0,0,0,200));
 
             gamePlayPane.getChildren().add(gameBoard);
             statsBoard = new VBox();
@@ -278,73 +298,6 @@ public class Workspace extends AppWorkspaceComponent {
     {
 
     }
-    /**
-     * states will correspond to what segment of the game should be running
-     * 1 - HOME - the user has not logged in and so just the create profile, view help nad login button are available
-     * 2 - LOGGED IN - the user has logged in and can see level selection and view help and home
-     * 3 - SELECT LEVEL - the user see's the 8 figures denoting the levels that they can play that are updated depenidng on what they have completed
-     * @param state
-     */
-    public void updateGUI(int state)
-    {
-        if(state == 1)
-        {
-            menuPane.getChildren().clear();
-            menuPane.getChildren().addAll(createButton,loginButton,viewHelpButton,changeColorButton);
-        }
-        if(state == 2)
-        {
-            menuPane.getChildren().clear();
-            gamePlayPane.getChildren().clear();
-            menuPane.getChildren().addAll(selectLevel,viewHelpButton,logoutButton,changeColorButton);
-            gamePlayPane.getChildren().addAll(gameBoard, statsBoard);
-            gameModeLabel.setText("Select a Game Mode!");
-        }
-        if(state == 3)
-        {
-            gamePlayPane.getChildren().clear();
-            gamePlayPane.getChildren().addAll(levelSelectBoard);
-        }
-    }
-    public GridPane createGameBoard()
-    {
-        GridPane gameboard = new GridPane();
-        int counter = 1;
-        //j is the row and i is the column
-        for(int i = 0 ; i < 7; i = i + 2)
-        {
-            for(int j = 0; j < 7; j = j + 2)
-            {
-                Button button = node.createBuzzWordButton(counter);
-                gameboard.add(button, i, j);
-                counter++;
-                button.setOnAction(event -> highlightGameButton(button));
-            }
-
-        }
-        for(int i = 1 ; i < 7; i = i + 2)
-        {
-            for(int j = 0; j < 7; j = j + 2)
-            {
-                Line line = new Line(0,60,60,60);
-                gameboard.add(line, i, j);
-            }
-
-        }
-        for(int i = 0; i < 7; i = i + 2)
-        {
-            for(int j = 1; j < 7; j = j + 2)
-            {
-                Pane pane = new Pane();
-                pane.setPrefSize(60,60);
-                Line line = new Line(60,0,60,60);
-                pane.getChildren().add(line);
-                gameboard.add(pane, i, j);
-            }
-
-        }
-        return gameboard;
-    }
 
     /**
      * These represent the states of the game, they are able to be called and have the appropriate workspace, but the
@@ -374,13 +327,14 @@ public class Workspace extends AppWorkspaceComponent {
     public void gamePlayScreen(String level)
     {
         menuPane.getChildren().clear();
-        String gameLevel = level;
         gameModeLabel.setText(gameModeLabel.getText() + " level " + level);
         menuPane.getChildren().addAll(homeButton,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().addAll(gameBoard,statsBoard);
     }
-
+    public void highlightGameButton(Button button) {
+        button.setStyle(button.getStyle() + ";-fx-border-color: yellow;");
+    }
     public GridPane createProfileScreen()
     {
         GridPane pane = new GridPane();
@@ -405,9 +359,12 @@ public class Workspace extends AppWorkspaceComponent {
         pane.add(userNameField,1,1);
         pane.add(passwordLabel,0,2);
         pane.add(passwordField,1,2);
+        CreateUserHandler handler = new CreateUserHandler(app,this);
         Button submit = new Button("Create Profile");
         submit.setOnAction(event -> {
-            homeScreen();
+            handler.setUsername(userNameField.getText());
+            handler.setPassword(passwordField.getText());
+            handler.handle(new ActionEvent());
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));
@@ -418,8 +375,63 @@ public class Workspace extends AppWorkspaceComponent {
         pane.add(submit,0,3);
         return pane;
     }
-    public void highlightGameButton(Button button) {
-        button.setStyle(button.getStyle() + ";-fx-border-color: yellow;");
+    public GridPane createGameBoard()
+    {
+        GridPane gameboard = new GridPane();
+        int counter = 1;
+        //j is the row and i is the column
+        for(int i = 0 ; i < 7; i = i + 2)
+        {
+            for(int j = 0; j < 7; j = j + 2)
+            {
+                String letter = generateRandomLetter();
+                Button button = node.createBuzzWordButton(letter);
+                gameboard.add(button, i, j);
+                counter++;
+                button.setOnAction(event -> highlightGameButton(button));
+            }
+
+        }
+        for(int i = 1 ; i < 7; i = i + 2)
+        {
+            for(int j = 0; j < 7; j = j + 2)
+            {
+                Line line = new Line(0,60,60,60);
+                gameboard.add(line, i, j);
+            }
+
+        }
+        for(int i = 0; i < 7; i = i + 2)
+        {
+            for(int j = 1; j < 7; j = j + 2)
+            {
+                Pane pane = new Pane();
+                pane.setPrefSize(60,60);
+                Line line = new Line(60,0,60,60);
+                pane.getChildren().add(line);
+                gameboard.add(pane, i, j);
+            }
+
+        }
+        return gameboard;
+    }
+    public Node getNodeByRowColumnIndex (final int row, final int column, GridPane gridPane) {
+        Node result = null;
+        ObservableList<Node> childrens = gridPane.getChildren();
+
+        for (Node node : childrens) {
+            if(gridPane.getRowIndex(node) == row && gridPane.getColumnIndex(node) == column) {
+                result = node;
+                break;
+            }
+        }
+        return result;
+    }
+    public String generateRandomLetter()
+    {
+        String letterBank = "AAAAAAAABCDEEEEEEEFGHIKLMNOPRSTUWY";
+        Random randomNumberGenerator = new Random();
+        return (letterBank.charAt(randomNumberGenerator.nextInt(letterBank.length()-1))+"");
     }
     public GridPane createLoginScreen()
     {
@@ -445,9 +457,12 @@ public class Workspace extends AppWorkspaceComponent {
         pane.add(userNameField,1,1);
         pane.add(passwordLabel,0,2);
         pane.add(passwordField,1,2);
+        CreateUserHandler handler = new CreateUserHandler(app,this);
         Button submit = new Button("Login Profile!");
         submit.setOnAction(event -> {
-            this.updateGUI(2);
+            handler.setUsername(userNameField.getText());
+            handler.setPassword(passwordField.getText());
+            handler.handle(new ActionEvent());
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));

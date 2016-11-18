@@ -1,5 +1,8 @@
 package data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by James on 11/15/2016.
  */
@@ -7,13 +10,14 @@ public class User
 {
     private String userName;
     private String userPassWord;
+    @JsonIgnore
     private GameModes gamemodes;
 
     public User()
     {
 
     }
-    public User(String userName, String userPassWord)
+    public User(@JsonProperty("userName")String userName,@JsonProperty("userPassWord")String userPassWord)
     {
         this.userName = userName;
         this.userPassWord = userPassWord;

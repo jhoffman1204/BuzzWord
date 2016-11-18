@@ -90,6 +90,13 @@ public class WorkspaceNodeInitialization
         button.setStyle("-fx-font-weight: bold; -fx-font-size: 30px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
         return button;
     }
+    public Button createBuzzWordButton(String text)
+    {
+        Button button = new Button(text);
+        button.setMinSize(120,120);
+        button.setStyle("-fx-font-weight: bold; -fx-font-size: 30px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        return button;
+    }
     public Button createLevelSelectionButton()
     {
         Button button = new Button();

@@ -1,23 +1,19 @@
 package controller;
 
 import apptemplate.AppTemplate;
-import data.GameData;
 import data.GameMode;
 import data.User;
-import gui.Workspace;
-import javafx.animation.AnimationTimer;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
+
+import java.io.*;
+import java.util.Random;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.stage.FileChooser;
 import propertymanager.PropertyManager;
-import ui.AppMessageDialogSingleton;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
-import static settings.AppPropertyType.*;
+import static settings.AppPropertyType.SAVE_WORK_TITLE;
+import static settings.AppPropertyType.WORK_FILE_EXT;
+import static settings.AppPropertyType.WORK_FILE_EXT_DESC;
 
 /**
  * @author Ritwik Banerjee
@@ -49,10 +45,40 @@ public class HangmanController implements FileController {
     {
         User newUser = new User(username,password);
         currentUser = newUser;
+        System.out.println("a new user has been created with the username " + currentUser.getUserName() + " and password " + currentUser.getUserPassWord());
+        saveUserInformation();
+    }
+    public void saveUserInformation()
+    {
+        ObjectMapper jsonWriter = new ObjectMapper();
+        File selectedFile = new File("./Hangman/src/data/" + currentUser.getUserName() + ".json");
+        try {
+            jsonWriter.writeValue(selectedFile, currentUser);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     public void completedLevel(String gamemode, int level)
     {
         currentUser.levelCompleted(gamemode, level);
+    }
+    public String generateRandomWordFromFile(String wordBankName, int wordBankSize) throws IOException {
+        FileInputStream fis = new FileInputStream("Hangman/resources/words/" + wordBankName + ".txt");
+
+        //Construct BufferedReader from InputStreamReader
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        Random random = new Random();
+        String line = null;
+        int search = random.nextInt(wordBankSize);
+        for(int i = 0; i < search; i++)
+        {
+            line = br.readLine();
+        }
+        System.out.println(line);
+
+
+        br.close();
+        return line;
     }
     @Override
     public void handleNewRequest() {
