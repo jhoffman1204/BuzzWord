@@ -74,6 +74,14 @@ public class WorkspaceNodeInitialization
         button.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
         return button;
     }
+    public Button createBackButton()
+    {
+        Button button = new Button("Back");
+        button.setMinHeight(100);
+        button.setMinWidth(200);
+        button.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        return button;
+    }
     public Button createPlayerProfileButton()
     {
         Button button = new Button("Player Profile");

@@ -1,6 +1,7 @@
 package controller;
 
 import apptemplate.AppTemplate;
+import data.GameData;
 import data.GameMode;
 import data.User;
 import javafx.scene.control.Button;
@@ -10,6 +11,7 @@ import java.util.Random;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.stage.FileChooser;
 import propertymanager.PropertyManager;
+import ui.AppMessageDialogSingleton;
 
 import static settings.AppPropertyType.SAVE_WORK_TITLE;
 import static settings.AppPropertyType.WORK_FILE_EXT;
@@ -35,6 +37,10 @@ public class HangmanController implements FileController {
     }
 
 
+    public User getCurrentUser()
+    {
+        return this.currentUser;
+    }
     public void start() {
         currentUser.levelCompleted("presidents",1);
         System.out.println(currentUser.isLevelCompleted("presidents",1));
@@ -58,6 +64,28 @@ public class HangmanController implements FileController {
             e.printStackTrace();
         }
     }
+    public boolean loadUserInformation(String username, String password)
+    {
+        ObjectMapper jsonLoader = new ObjectMapper();
+        User tempUser = null;
+        try {
+            tempUser = jsonLoader.readValue(new File(".\\Hangman\\src\\data\\" + username + ".json"), User.class);
+            if(password.contains(tempUser.getUserPassWord())) {
+                currentUser = tempUser;
+                System.out.println("login successful");
+            }
+            else
+            {
+                throw new IOException();
+            }
+            return true;
+        } catch (IOException e) {
+            AppMessageDialogSingleton.getSingleton().show("Invalid Username","That username/password combination does not exist, select another");
+            return false;
+        }
+    }
+
+
     public void completedLevel(String gamemode, int level)
     {
         currentUser.levelCompleted(gamemode, level);

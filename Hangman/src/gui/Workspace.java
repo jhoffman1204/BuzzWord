@@ -55,6 +55,7 @@ public class Workspace extends AppWorkspaceComponent {
     Button      exitButton;
     Label       gameModeLabel;
     Button      startGame;
+    Button      backButton;
 
     String currentUserName;
     String currentPassword;
@@ -125,6 +126,7 @@ public class Workspace extends AppWorkspaceComponent {
             //moves the title 400 pixels to the right (because the margin is on the left
             titlePane.setMargin(image2,new Insets(-20,0,-50,400));
 
+            backButton = node.createBackButton();
             playerProfileButton = node.createPlayerProfileButton();
             createButton = node.createProfileButton();
             loginButton = node.createLoginButton();
@@ -183,7 +185,7 @@ public class Workspace extends AppWorkspaceComponent {
             {
                 gamePlayPane.getChildren().clear();
                 menuPane.getChildren().clear();
-                menuPane.getChildren().addAll(exitButton,homeButton);
+                menuPane.getChildren().addAll(exitButton,backButton);
                 gamePlayPane.getChildren().addAll(loginAccount);
             });
             homeButton.setOnAction(event ->
@@ -192,6 +194,7 @@ public class Workspace extends AppWorkspaceComponent {
                 gamePlayPane.getChildren().clear();
                 gamePlayPane.getChildren().addAll(gameBoard);
             });
+            backButton.setOnAction(event -> loginScreen());
             menuPane.getChildren().addAll(selectLevel,createButton,loginButton,viewHelpButton,changeColorButton);
             this.setPaneMargins();
             changeColorButton.setAlignment(Pos.BASELINE_LEFT);
@@ -202,8 +205,8 @@ public class Workspace extends AppWorkspaceComponent {
             //menuPane.getChildren().add(helpView);
 
             titlePane.setMargin(   gameModeLabel, new Insets(0,0,0,200));
-            gamePlayPane.setMargin(createAccount, new Insets(0,0,0,200));
-            gamePlayPane.setMargin(loginAccount, new Insets(0,0,0,200));
+            gamePlayPane.setMargin(createAccount, new Insets(100,0,0,400));
+            gamePlayPane.setMargin(loginAccount, new Insets(100,0,0,400));
 
             gamePlayPane.getChildren().add(gameBoard);
             statsBoard = new VBox();
@@ -286,6 +289,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void setPaneMargins()
     {
+        menuPane.setMargin(backButton,       new Insets(80,0,0,50));
         menuPane.setMargin(selectLevel,      new Insets(80,0,0,50));
         menuPane.setMargin(createButton,     new Insets(80,0,0,50));
         menuPane.setMargin(loginButton,      new Insets(80,0,0,50));
@@ -306,6 +310,7 @@ public class Workspace extends AppWorkspaceComponent {
     public void loginScreen()
     {
         menuPane.getChildren().clear();
+        gameModeLabel.setText("Login or Create a New Profile");
         menuPane.getChildren().addAll(createButton,loginButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
@@ -313,6 +318,7 @@ public class Workspace extends AppWorkspaceComponent {
     public void homeScreen()
     {
         menuPane.getChildren().clear();
+        gameModeLabel.setText("Welcome " + controller.getCurrentUser().getUserName());
         menuPane.getChildren().addAll(selectLevel,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
@@ -320,6 +326,7 @@ public class Workspace extends AppWorkspaceComponent {
     public void levelSelectScreen()
     {
         menuPane.getChildren().clear();
+        gameModeLabel.setText("Choose what level you want to play");
         menuPane.getChildren().addAll(selectLevel,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(levelSelectBoard);
@@ -460,9 +467,10 @@ public class Workspace extends AppWorkspaceComponent {
         CreateUserHandler handler = new CreateUserHandler(app,this);
         Button submit = new Button("Login Profile!");
         submit.setOnAction(event -> {
-            handler.setUsername(userNameField.getText());
-            handler.setPassword(passwordField.getText());
-            handler.handle(new ActionEvent());
+            if(controller.loadUserInformation(userNameField.getText(),passwordField.getText()) == true)
+            {
+                homeScreen();
+            }
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));
