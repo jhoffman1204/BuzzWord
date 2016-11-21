@@ -34,7 +34,7 @@ public class CreateUserHandler implements EventHandler<ActionEvent>
     @Override
     public void handle(ActionEvent event)
     {
-        workspace.homeScreen();
         controller.createNewUser(this.username,this.password);
+        workspace.homeScreen();
     }
 }

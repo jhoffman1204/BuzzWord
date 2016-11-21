@@ -28,6 +28,7 @@ public class GameMode
         for(int i = 0; i < gameModeLevels.length; i++)
         {
             this.gameModeLevels[i] = new GameModeLevel();
+            gameModeLevels[i].setGameModeLevel(i + 1);
         }
     }
 

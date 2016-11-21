@@ -18,6 +18,7 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
 import propertymanager.PropertyManager;
 import ui.AppGUI;
+import ui.YesNoCancelDialogSingleton;
 
 import java.io.IOException;
 import java.util.Random;
@@ -59,7 +60,7 @@ public class Workspace extends AppWorkspaceComponent {
 
     String currentUserName;
     String currentPassword;
-
+    String currentGameMode;
 
     String userName;
     WorkspaceNodeInitialization node = new WorkspaceNodeInitialization();
@@ -72,6 +73,7 @@ public class Workspace extends AppWorkspaceComponent {
      * @throws IOException Thrown should there be an error loading application
      *                     data for setting up the user interface.
      */
+
     public Workspace(AppTemplate initApp) throws IOException {
         app = initApp;
         gui = app.getGUI();
@@ -149,22 +151,36 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                     if(newValue.intValue() == 1){
                         gameModeLabel.setText("Presidents");
+                        currentGameMode = "presidents";
+                        controller.setCurrentGameModeString("presidents");
+                        controller.updateLevelCurrentlyOn();
                     }
                     else if(newValue.intValue() == 2)
                     {
                         gameModeLabel.setText("Science");
+                        currentGameMode = "science";
+                        controller.setCurrentGameModeString("science");
+                        controller.updateLevelCurrentlyOn();
                     }
                     else if(newValue.intValue() == 3)
                     {
                         gameModeLabel.setText("Countries");
+                        currentGameMode = "countries";
+                        controller.setCurrentGameModeString("countries");
+                        controller.updateLevelCurrentlyOn();
                     }
 
                 }
             });
             viewHelpButton.setOnAction(event -> {
                 try {
+                   controller.start();
                    // controller.generateRandomWordFromFile("CountriesVocab",35);
                     controller.generateRandomWordFromFile("AnimalsVocab",135);
+                   //getNodeByRowColumnIndex(0,1,levelSelectBoard).setDisable(true);
+                    controller.completedLevel("presidents",1,20);
+                    controller.completedLevel("presidents",2,20);
+                    controller.completedLevel("science",1,20);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -174,7 +190,18 @@ public class Workspace extends AppWorkspaceComponent {
                 loginScreen();
                 this.userName = "";
             });
-            exitButton.setOnAction(event -> System.exit(1));
+            exitButton.setOnAction(event ->
+            {
+                YesNoCancelDialogSingleton.getSingleton().show("Exit Game","Do you really want to exit the game?");
+                if(YesNoCancelDialogSingleton.getSingleton().getSelection().equalsIgnoreCase("yes"))
+                {
+                    System.exit(1);
+                }
+                else
+                {
+                    return;
+                }
+            });
             createButton.setOnAction(event -> {
                 gamePlayPane.getChildren().clear();
                 menuPane.getChildren().clear();
@@ -311,15 +338,15 @@ public class Workspace extends AppWorkspaceComponent {
     {
         menuPane.getChildren().clear();
         gameModeLabel.setText("Login or Create a New Profile");
-        menuPane.getChildren().addAll(createButton,loginButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,createButton,loginButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
     }
     public void homeScreen()
     {
         menuPane.getChildren().clear();
-        gameModeLabel.setText("Welcome " + controller.getCurrentUser().getUserName());
-        menuPane.getChildren().addAll(selectLevel,logoutButton,viewHelpButton,changeColorButton);
+        //gameModeLabel.setText("Welcome " + controller.getCurrentUser().getUserName());
+        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
     }
@@ -327,7 +354,7 @@ public class Workspace extends AppWorkspaceComponent {
     {
         menuPane.getChildren().clear();
         gameModeLabel.setText("Choose what level you want to play");
-        menuPane.getChildren().addAll(selectLevel,logoutButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(levelSelectBoard);
     }
@@ -335,7 +362,7 @@ public class Workspace extends AppWorkspaceComponent {
     {
         menuPane.getChildren().clear();
         gameModeLabel.setText(gameModeLabel.getText() + " level " + level);
-        menuPane.getChildren().addAll(homeButton,logoutButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().addAll(gameBoard,statsBoard);
     }
@@ -372,6 +399,7 @@ public class Workspace extends AppWorkspaceComponent {
             handler.setUsername(userNameField.getText());
             handler.setPassword(passwordField.getText());
             handler.handle(new ActionEvent());
+            this.loadUser(userNameField.getText(),passwordField.getText());
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));
@@ -434,6 +462,14 @@ public class Workspace extends AppWorkspaceComponent {
         }
         return result;
     }
+    public void enableLevelSelectionNode(int row, int column)
+    {
+        this.getNodeByRowColumnIndex(row,column,this.levelSelectBoard).setDisable(false);
+    }
+    public void disableLevelSelectionNode(int row, int column)
+    {
+        this.getNodeByRowColumnIndex(row,column,this.levelSelectBoard).setDisable(true);
+    }
     public String generateRandomLetter()
     {
         String letterBank = "AAAAAAAABCDEEEEEEEFGHIKLMNOPRSTUWY";
@@ -481,6 +517,10 @@ public class Workspace extends AppWorkspaceComponent {
         pane.add(submit,0,3);
         return pane;
     }
+    public void loadUser(String username, String password)
+    {
+        controller.loadUserInformation(username, password);
+    }
     public GridPane createLevelSelection() throws IOException {
         GridPane levelSelection = new GridPane();
         levelSelection.setHgap(50);
@@ -492,16 +532,17 @@ public class Workspace extends AppWorkspaceComponent {
             for(int j = 0; j < 4; j++)
             {
                 Button button = node.createLevelSelectionButton();
+                button.setDisable(true);
                 button.setOnAction(event -> {
                     gamePlayScreen(button.getText());
-                    setupHandlers();
+                    controller.completedLevel(currentGameMode,Integer.parseInt(button.getText()) + 1,5);
+                    controller.updateLevelCurrentlyOn();
                 });
                 button.setText(counter + "");
                 levelSelection.add(button, j, i);
                 counter++;
             }
         }
-
         return levelSelection;
     }
 
