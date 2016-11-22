@@ -113,8 +113,8 @@ public class Workspace extends AppWorkspaceComponent {
             gamePlayPane = new HBox();
             gameBoard = this.createGameBoard();
             //spacing between the nodes that are in the Gridpane
-            gameBoard.setHgap(0);
-            gameBoard.setVgap(0);
+            gameBoard.setHgap(50);
+            gameBoard.setVgap(50);
 
 
             gameModeLabel = new Label("Log in or Create a Profile!");
@@ -144,12 +144,13 @@ public class Workspace extends AppWorkspaceComponent {
             selectLevel.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
                 @Override
                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                    levelSelectScreen();
                     if(newValue.intValue() == 0)
                     {
                         gameModeLabel.setText("<-- Select a Level");
                     }
                     if(newValue.intValue() == 1){
+
+                        levelSelectScreen();
                         gameModeLabel.setText("Presidents");
                         currentGameMode = "presidents";
                         controller.setCurrentGameModeString("presidents");
@@ -157,6 +158,7 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                     else if(newValue.intValue() == 2)
                     {
+                        levelSelectScreen();
                         gameModeLabel.setText("Science");
                         currentGameMode = "science";
                         controller.setCurrentGameModeString("science");
@@ -164,6 +166,7 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                     else if(newValue.intValue() == 3)
                     {
+                        levelSelectScreen();
                         gameModeLabel.setText("Countries");
                         currentGameMode = "countries";
                         controller.setCurrentGameModeString("countries");
@@ -174,13 +177,10 @@ public class Workspace extends AppWorkspaceComponent {
             });
             viewHelpButton.setOnAction(event -> {
                 try {
-                   controller.start();
+                   // controller.start();
                    // controller.generateRandomWordFromFile("CountriesVocab",35);
-                    controller.generateRandomWordFromFile("AnimalsVocab",135);
-                   //getNodeByRowColumnIndex(0,1,levelSelectBoard).setDisable(true);
-                    controller.completedLevel("presidents",1,20);
-                    controller.completedLevel("presidents",2,20);
-                    controller.completedLevel("science",1,20);
+                   // controller.generateRandomWordFromFile("AnimalsVocab",135);
+                    controller.generateRandomWordFromFile("generalVocab",300000,4);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -195,12 +195,14 @@ public class Workspace extends AppWorkspaceComponent {
                 YesNoCancelDialogSingleton.getSingleton().show("Exit Game","Do you really want to exit the game?");
                 if(YesNoCancelDialogSingleton.getSingleton().getSelection().equalsIgnoreCase("yes"))
                 {
+                    controller.saveUserInformation();
                     System.exit(1);
                 }
                 else
                 {
                     return;
                 }
+
             });
             createButton.setOnAction(event -> {
                 gamePlayPane.getChildren().clear();
@@ -215,11 +217,8 @@ public class Workspace extends AppWorkspaceComponent {
                 menuPane.getChildren().addAll(exitButton,backButton);
                 gamePlayPane.getChildren().addAll(loginAccount);
             });
-            homeButton.setOnAction(event ->
-            {
+            homeButton.setOnAction(event -> {
                 homeScreen();
-                gamePlayPane.getChildren().clear();
-                gamePlayPane.getChildren().addAll(gameBoard);
             });
             backButton.setOnAction(event -> loginScreen());
             menuPane.getChildren().addAll(selectLevel,createButton,loginButton,viewHelpButton,changeColorButton);
@@ -345,10 +344,11 @@ public class Workspace extends AppWorkspaceComponent {
     public void homeScreen()
     {
         menuPane.getChildren().clear();
-        //gameModeLabel.setText("Welcome " + controller.getCurrentUser().getUserName());
+        gameModeLabel.setText("Select a Level");
         menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
+        selectLevel.getSelectionModel().selectFirst();
     }
     public void levelSelectScreen()
     {
@@ -361,7 +361,7 @@ public class Workspace extends AppWorkspaceComponent {
     public void gamePlayScreen(String level)
     {
         menuPane.getChildren().clear();
-        gameModeLabel.setText(gameModeLabel.getText() + " level " + level);
+        gameModeLabel.setText(currentGameMode + " level " + level);
         menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().addAll(gameBoard,statsBoard);
@@ -410,14 +410,54 @@ public class Workspace extends AppWorkspaceComponent {
         pane.add(submit,0,3);
         return pane;
     }
+//    public GridPane createGameBoard()
+//    {
+//        GridPane gameboard = new GridPane();
+//        int counter = 1;
+//        //j is the row and i is the column
+//        for(int i = 0 ; i < 7; i = i + 2)
+//        {
+//            for(int j = 0; j < 7; j = j + 2)
+//            {
+//                String letter = generateRandomLetter();
+//                Button button = node.createBuzzWordButton(letter);
+//                gameboard.add(button, i, j);
+//                counter++;
+//                button.setOnAction(event -> highlightGameButton(button));
+//            }
+//
+//        }
+//        for(int i = 1 ; i < 7; i = i + 2)
+//        {
+//            for(int j = 0; j < 7; j = j + 2)
+//            {
+//                Line line = new Line(0,60,60,60);
+//                gameboard.add(line, i, j);
+//            }
+//
+//        }
+//        for(int i = 0; i < 7; i = i + 2)
+//        {
+//            for(int j = 1; j < 7; j = j + 2)
+//            {
+//                Pane pane = new Pane();
+//                pane.setPrefSize(60,60);
+//                Line line = new Line(60,0,60,60);
+//                pane.getChildren().add(line);
+//                gameboard.add(pane, i, j);
+//            }
+//
+//        }
+//        return gameboard;
+//    }
     public GridPane createGameBoard()
     {
         GridPane gameboard = new GridPane();
         int counter = 1;
         //j is the row and i is the column
-        for(int i = 0 ; i < 7; i = i + 2)
+        for(int i = 0 ; i < 4; i++)
         {
-            for(int j = 0; j < 7; j = j + 2)
+            for(int j = 0; j < 4; j++)
             {
                 String letter = generateRandomLetter();
                 Button button = node.createBuzzWordButton(letter);
@@ -427,28 +467,11 @@ public class Workspace extends AppWorkspaceComponent {
             }
 
         }
-        for(int i = 1 ; i < 7; i = i + 2)
-        {
-            for(int j = 0; j < 7; j = j + 2)
-            {
-                Line line = new Line(0,60,60,60);
-                gameboard.add(line, i, j);
-            }
-
-        }
-        for(int i = 0; i < 7; i = i + 2)
-        {
-            for(int j = 1; j < 7; j = j + 2)
-            {
-                Pane pane = new Pane();
-                pane.setPrefSize(60,60);
-                Line line = new Line(60,0,60,60);
-                pane.getChildren().add(line);
-                gameboard.add(pane, i, j);
-            }
-
-        }
         return gameboard;
+    }
+    public void insertWordIntoGameBoard()
+    {
+
     }
     public Node getNodeByRowColumnIndex (final int row, final int column, GridPane gridPane) {
         Node result = null;

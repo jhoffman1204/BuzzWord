@@ -14,6 +14,7 @@ import javafx.stage.FileChooser;
 import propertymanager.PropertyManager;
 import ui.AppMessageDialogSingleton;
 
+import static java.lang.System.out;
 import static settings.AppPropertyType.SAVE_WORK_TITLE;
 import static settings.AppPropertyType.WORK_FILE_EXT;
 import static settings.AppPropertyType.WORK_FILE_EXT_DESC;
@@ -82,7 +83,7 @@ public class HangmanController implements FileController {
     {
         User newUser = new User(username,password);
         currentUser = newUser;
-        System.out.println("a new user has been created with the username " + currentUser.getUserName() + " and password " + currentUser.getUserPassWord());
+        out.println("a new user has been created with the username " + currentUser.getUserName() + " and password " + currentUser.getUserPassWord());
         saveUserInformation();
     }
     public void saveUserInformation()
@@ -91,6 +92,7 @@ public class HangmanController implements FileController {
         File selectedFile = new File("./Hangman/src/data/" + currentUser.getUserName() + ".json");
         try {
             jsonWriter.writeValue(selectedFile, currentUser);
+            out.println("gave saved");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -100,14 +102,16 @@ public class HangmanController implements FileController {
         ObjectMapper jsonLoader = new ObjectMapper();
         User tempUser = null;
         try {
-            tempUser = jsonLoader.readValue(new File(".\\Hangman\\src\\data\\" + username + ".json"), User.class);
-            if(password.contains(tempUser.getUserPassWord())) {
-                currentUser = tempUser;
-                System.out.println("login successful" + currentUser.getGamemodes().toString());
+            currentUser = jsonLoader.readValue(new File(".\\Hangman\\src\\data\\" + username + ".json"), User.class);
+            if(password.contains(currentUser.getUserPassWord())) {
 
-                completedLevel("presidents",1,20);
-                completedLevel("presidents",2,20);
-                completedLevel("science",1,20);
+                out.println("login successful" + currentUser.getGamemodes().toString());
+
+
+                out.println(currentUser.getGamemodes().get("presidents").getSpecificGameModeLevel(1).isCompleted());
+                completedLevel("presidents",1,1);
+                completedLevel("science",1,1);
+                completedLevel("countries",1,1);
             }
             else
             {
@@ -129,7 +133,7 @@ public class HangmanController implements FileController {
     {
         currentUser.levelCompleted(gamemode, level, score);
     }
-    public String generateRandomWordFromFile(String wordBankName, int wordBankSize) throws IOException {
+    public String generateRandomWordFromFile(String wordBankName, int wordBankSize, int wordSize) throws IOException {
         FileInputStream fis = new FileInputStream("Hangman/resources/words/" + wordBankName + ".txt");
 
         //Construct BufferedReader from InputStreamReader
@@ -142,7 +146,6 @@ public class HangmanController implements FileController {
             line = br.readLine();
         }
         System.out.println(line);
-
 
         br.close();
         return line;

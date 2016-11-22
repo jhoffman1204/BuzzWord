@@ -24,7 +24,7 @@ public class User
     {
         this.userName = userName;
         this.userPassWord = userPassWord;
-        this.gamemodes = new GameModes();
+        this.gamemodes = gameModes;
         //this.levelsCompleted = initializeLevelsCompleted();
     }
     public User(String userName, String userPassWord)
