@@ -131,32 +131,32 @@ public class WorkspaceNodeInitialization
     public HBox timeRemainingPanes()
     {
         HBox pane = new HBox();
+        CountDownTimer ct = new CountDownTimer();
+        HBox timer = ct.createCountdownPane();
         pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
         pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
         Label label = new Label("Time Remaining: 40s");
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
-        pane.getChildren().add(label);
+        pane.getChildren().addAll(label,timer);
         return pane;
     }
     public HBox createCurrentLetterPane()
     {
         HBox pane = new HBox();
-        pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
-        pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
-        Label label = new Label("Current letters selected: B U");
+        Label label = new Label("B U");
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
         pane.getChildren().add(label);
         return pane;
     }
-    public HBox guessedWordsPane()
+    public VBox guessedWordsPane()
     {
-        HBox pane = new HBox();
+        VBox pane = new VBox();
         pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
         pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
-        Label label = new Label("Guessed Words: word");
+        Label label = new Label("word" + "                                          " + "25");
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
         pane.getChildren().add(label);
         return pane;
@@ -167,18 +167,7 @@ public class WorkspaceNodeInitialization
         pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
         pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
-        Label label = new Label("Total Points: 75");
-        label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
-        pane.getChildren().add(label);
-        return pane;
-    }
-    public HBox targetPointsPane()
-    {
-        HBox pane = new HBox();
-        pane.setMinSize(400,80);
-        pane.setMaxSize(400,80);
-        pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
-        Label label = new Label("Target Points: 150");
+        Label label = new Label("Total" + "                                          " + "75");
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
         pane.getChildren().add(label);
         return pane;

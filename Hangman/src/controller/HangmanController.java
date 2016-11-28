@@ -3,6 +3,7 @@ package controller;
 import apptemplate.AppTemplate;
 import data.GameData;
 import data.GameMode;
+import data.GameModeLevel;
 import data.User;
 import gui.Workspace;
 import javafx.scene.control.Button;
@@ -44,11 +45,17 @@ public class HangmanController implements FileController {
     {
         return this.currentUser;
     }
+    public void retrieveLevelData(String gameMode, int level)
+    {
+        getCurrentGameMode(gameMode, level).getPersonalBest();
+        getCurrentGameMode(gameMode, level).getRequiredPoints();
+        getCurrentGameMode(gameMode, level).getTimeAllowed();
+    }
+    public GameModeLevel getCurrentGameMode(String gameModeTitle, int level)
+    {
+        return currentUser.getGamemodes().get(gameModeTitle).getSpecificGameModeLevel(level);
+    }
     public void start() {
-        //currentUser.levelCompleted("presidents",1);
-        //System.out.println(currentUser.isLevelCompleted("presidents",1));
-
-        //System.out.println(currentUser.getLevelsCompleted().toString());
 
 
     }
@@ -133,6 +140,7 @@ public class HangmanController implements FileController {
     {
         currentUser.levelCompleted(gamemode, level, score);
     }
+
     public String generateRandomWordFromFile(String wordBankName, int wordBankSize, int wordSize) throws IOException {
         FileInputStream fis = new FileInputStream("Hangman/resources/words/" + wordBankName + ".txt");
 
