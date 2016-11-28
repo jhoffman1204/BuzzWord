@@ -153,7 +153,11 @@ public class HangmanController implements FileController {
         {
             line = br.readLine();
         }
-        System.out.println(line);
+        if( line == null)
+        {
+            System.out.println("for some reason the line is null");
+            line = generateRandomWordFromFile(wordBankName,wordBankSize,wordSize);
+        }
 
         br.close();
         return line;

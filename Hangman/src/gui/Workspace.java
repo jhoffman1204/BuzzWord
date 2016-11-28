@@ -190,13 +190,19 @@ public class Workspace extends AppWorkspaceComponent {
                     clearboard();
                     randomInsert();
                     randomInsert();
+                    randomInsert();
+                    fillInBoard();
                     //insertWordsIntoGameBoard("AnimalsVocab");
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
-            changeColorButton.setOnAction(event -> randomizeColorPalette());
+            changeColorButton.setOnAction(e ->
+            {
+                randomizeColorPalette();
+                fillInBoard();
+            });
             logoutButton.setOnAction(event -> {
                 loginScreen();
                 this.userName = "";
@@ -463,8 +469,24 @@ public class Workspace extends AppWorkspaceComponent {
                 }
             }
     }
+    public void fillInBoard()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                if(button.getText().equalsIgnoreCase(""))
+                {
+                    button.setText(generateRandomLetter().toLowerCase());
+                }
+            }
+        }
+    }
+
     public void randomInsert()
     {
+        int counter = 0;
         String word = null;
         Random random = new Random();
         int xCoor = random.nextInt(4);
@@ -472,6 +494,21 @@ public class Workspace extends AppWorkspaceComponent {
 
         try {
             word = controller.generateRandomWordFromFile("AnimalsVocab",100,2);
+            boolean a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
+            int infiniteCounter = 0;
+            while(a == false)
+            {
+                infiniteCounter++;
+                if(infiniteCounter > 20)
+                {
+                    return;
+                }
+                xCoor = random.nextInt(4);
+                yCoor = random.nextInt(4);
+                System.out.println("test");
+                a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
+            }
+            System.out.println(word);
             for(int i = 0; i < word.length(); i++)
             {
                 if( i == 0) {
@@ -479,9 +516,18 @@ public class Workspace extends AppWorkspaceComponent {
                     button.setText(word.charAt(i) + "");
                 }
                 if( i > 0) {
+                    counter++;
+                    if(counter > 20)
+                    {
+                        counter = 0;
+                        clearboard();
+                        randomInsert();
+                        randomInsert();
+                        randomInsert();
+                    }
                     int nextCoor = random.nextInt(4);
                     if (nextCoor == 0) {
-                        boolean a = checkIfNullOnGameBoard(gameBoard,xCoor + 1,yCoor);
+                        a = checkIfNullOnGameBoard(gameBoard,xCoor + 1,yCoor);
                         if(a == true)
                         {
                             Button button = (Button) getNodeByRowColumnIndex(xCoor + 1, yCoor, gameBoard);
@@ -492,7 +538,7 @@ public class Workspace extends AppWorkspaceComponent {
                             i--;
                         }
                     } if (nextCoor == 1) {
-                        boolean a = checkIfNullOnGameBoard(gameBoard,xCoor - 1,yCoor);
+                        a = checkIfNullOnGameBoard(gameBoard,xCoor - 1,yCoor);
                         if(a == true) {
                             Button button = (Button) getNodeByRowColumnIndex(xCoor - 1, yCoor, gameBoard);
                             xCoor--;
@@ -502,7 +548,7 @@ public class Workspace extends AppWorkspaceComponent {
                             i--;
                         }
                     } if (nextCoor == 2) {
-                        boolean a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor + 1);
+                        a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor + 1);
                         if(a == true){
                             Button button = (Button) getNodeByRowColumnIndex(xCoor, yCoor + 1, gameBoard);
                             yCoor++;
@@ -512,7 +558,7 @@ public class Workspace extends AppWorkspaceComponent {
                             i--;
                         }
                     } if (nextCoor == 3) {
-                        boolean a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor-1);
+                        a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor-1);
                         if(a == true) {
                             Button button = (Button) getNodeByRowColumnIndex(xCoor, yCoor - 1, gameBoard);
                             yCoor--;
@@ -541,7 +587,6 @@ public class Workspace extends AppWorkspaceComponent {
         }
         catch(Exception e)
         {
-            System.out.println("that node is null");
             return false;
         }
     }
@@ -583,7 +628,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public String generateRandomLetter()
     {
-        String letterBank = "AAAAAAAABCDEEEEEEEFGHIKLMNOPRSTUWY";
+        String letterBank = "AAAAABCDEEEEFGHIKLMNOPRSTUWY";
         Random randomNumberGenerator = new Random();
         return (letterBank.charAt(randomNumberGenerator.nextInt(letterBank.length()-1))+"");
     }
