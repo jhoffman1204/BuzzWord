@@ -55,9 +55,12 @@ public class HangmanController implements FileController {
     {
         return currentUser.getGamemodes().get(gameModeTitle).getSpecificGameModeLevel(level);
     }
-    public void start() {
-
-
+    public void start(String level)
+    {
+        currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).setRequiredPoints(20 + Integer.parseInt(level)* 10);
+        Workspace workspace = (Workspace) appTemplate.getWorkspaceComponent();
+        int targetScore = currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).getRequiredPoints();
+        workspace.initialzeStatsMenu(targetScore);
     }
     public void setCurrentGameModeString(String gameMode)
     {
@@ -115,9 +118,9 @@ public class HangmanController implements FileController {
                 out.println("login successful" + currentUser.getGamemodes().toString());
 
 
-                out.println(currentUser.getGamemodes().get("presidents").getSpecificGameModeLevel(1).isCompleted());
-                completedLevel("presidents",1,1);
-                completedLevel("science",1,1);
+                out.println(currentUser.getGamemodes().get("general").getSpecificGameModeLevel(1).isCompleted());
+                completedLevel("general",1,1);
+                completedLevel("animals",1,1);
                 completedLevel("countries",1,1);
             }
             else

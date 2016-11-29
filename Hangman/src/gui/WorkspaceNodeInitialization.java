@@ -25,7 +25,7 @@ public class WorkspaceNodeInitialization
     public ChoiceBox createSelectLevel()
     {
         ChoiceBox selectLevel = new ChoiceBox();
-        selectLevel.getItems().addAll("Select Mode","Presidents","Science","Countries");
+        selectLevel.getItems().addAll("Select Mode","General","Animals","Countries");
         selectLevel.getSelectionModel().selectFirst();
         selectLevel.setMinHeight(100);
         selectLevel.setMinWidth(200);

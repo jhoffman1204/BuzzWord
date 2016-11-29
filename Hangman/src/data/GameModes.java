@@ -13,11 +13,11 @@ public class GameModes extends HashMap<String,GameMode>
     }
     public void initializeGameModes()
     {
-        GameMode presidents = new GameMode("presidents",1);
-        this.put("presidents",presidents);
+        GameMode general = new GameMode("presidents",1);
+        this.put("general",general);
 
-        GameMode science = new GameMode("science",1);
-        this.put("science",science);
+        GameMode animals = new GameMode("animals",1);
+        this.put("animals",animals);
 
         GameMode countries = new GameMode("countries", 1);
         this.put("countries",countries);

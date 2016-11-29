@@ -58,12 +58,17 @@ public class Workspace extends AppWorkspaceComponent {
     Label       gameModeLabel;
     Button      startGame;
     Button      backButton;
+    Button      pauseButton;
+    Button      resumeButton;
 
     String currentUserName;
     String currentPassword;
     String currentGameMode;
 
-    String targetPointsLabel;
+    Label targetPointsLabel;
+    Label gameplayPauseLabel;
+
+    int currentVocabLength;
 
     String userName;
     WorkspaceNodeInitialization node = new WorkspaceNodeInitialization();
@@ -144,7 +149,7 @@ public class Workspace extends AppWorkspaceComponent {
             selectLevel =  node.createSelectLevel();
             createAccount = this.createProfileScreen();
             loginAccount = this.createLoginScreen();
-            levelSelectBoard = this.createLevelSelection();
+            levelSelectBoard = this.createLevelSelection("AnimalsVocab");
             logoutButton = node.createLogoutnButton();
             gamePlayPane.setMargin(levelSelectBoard,new Insets(30,0,0,100));
             selectLevel.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -155,24 +160,38 @@ public class Workspace extends AppWorkspaceComponent {
                         gameModeLabel.setText("<-- Select a Level");
                     }
                     if(newValue.intValue() == 1){
-
-                        levelSelectScreen();
-                        gameModeLabel.setText("Presidents");
-                        currentGameMode = "presidents";
-                        controller.setCurrentGameModeString("presidents");
+                        currentVocabLength = 148;
+                        try {
+                            levelSelectScreen("GeneralVocab");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        gameModeLabel.setText("General");
+                        currentGameMode = "general";
+                        controller.setCurrentGameModeString("general");
                         controller.updateLevelCurrentlyOn();
                     }
                     else if(newValue.intValue() == 2)
                     {
-                        levelSelectScreen();
-                        gameModeLabel.setText("Science");
-                        currentGameMode = "science";
-                        controller.setCurrentGameModeString("science");
+                        currentVocabLength = 134;
+                        try {
+                            levelSelectScreen("AnimalsVocab");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        gameModeLabel.setText("Animals");
+                        currentGameMode = "animals";
+                        controller.setCurrentGameModeString("animals");
                         controller.updateLevelCurrentlyOn();
                     }
                     else if(newValue.intValue() == 3)
                     {
-                        levelSelectScreen();
+                        currentVocabLength = 36;
+                        try {
+                            levelSelectScreen("CountriesVocab");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         gameModeLabel.setText("Countries");
                         currentGameMode = "countries";
                         controller.setCurrentGameModeString("countries");
@@ -187,12 +206,8 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("CountriesVocab",35);
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
-                    clearboard();
-                    randomInsert();
-                    randomInsert();
-                    randomInsert();
-                    fillInBoard();
                     //insertWordsIntoGameBoard("AnimalsVocab");
+                    generateNewGameBoard("AnimalsVocab");
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -261,10 +276,31 @@ public class Workspace extends AppWorkspaceComponent {
             HBox totalPointsPane    = node.totalPointsPane();
             HBox targetPoints       = this.targetPointsPane();
 
-            Button pauseButton = new Button("Pause Game");
+
+
+            pauseButton = new Button("Pause Game");
             pauseButton.setMinHeight(50);
             pauseButton.setMinWidth(100);
             pauseButton.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+            pauseButton.setOnAction(event ->
+            {
+                gameBoard.setVisible(false);
+                statsBoard.getChildren().remove(pauseButton);
+                statsBoard.getChildren().add(resumeButton);
+            });
+
+            resumeButton = new Button("Resume Game");
+            resumeButton.setMinHeight(50);
+            resumeButton.setMinWidth(100);
+            resumeButton.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+
+            resumeButton.setOnAction(event ->
+            {
+                gameBoard.setVisible(true);
+                statsBoard.getChildren().remove(resumeButton);
+                statsBoard.getChildren().add(pauseButton);
+            });
+
 
 
             statsBoard.getChildren().add(timerPane);
@@ -282,6 +318,7 @@ public class Workspace extends AppWorkspaceComponent {
             statsBoard.setMargin(totalPointsPane,new Insets(0,0,20,40));
             statsBoard.setMargin(targetPoints,new Insets(0,0,20,40));
             statsBoard.setMargin(pauseButton,new Insets(0,0,40,40));
+            statsBoard.setMargin(resumeButton,new Insets(0,0,40,40));
 
 
             gamePlayPane.setMargin(statsBoard, new Insets(0,0,0,100));
@@ -312,6 +349,14 @@ public class Workspace extends AppWorkspaceComponent {
         {
             e.printStackTrace();
         }
+    }
+    public void generateNewGameBoard(String vocab)
+    {
+        clearboard();
+        randomInsert(vocab);
+        randomInsert(vocab);
+        randomInsert(vocab);
+        fillInBoard();
     }
     public void randomizeColorPalette()
     {
@@ -375,8 +420,9 @@ public class Workspace extends AppWorkspaceComponent {
         gamePlayPane.getChildren().add(gameBoard);
         selectLevel.getSelectionModel().selectFirst();
     }
-    public void levelSelectScreen()
-    {
+    public void levelSelectScreen(String vocab) throws IOException {
+        levelSelectBoard = this.createLevelSelection(vocab);
+        gamePlayPane.setMargin(levelSelectBoard,new Insets(30,0,0,100));
         menuPane.getChildren().clear();
         gameModeLabel.setText("Choose what level you want to play");
         menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
@@ -385,6 +431,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void gamePlayScreen(String level)
     {
+        controller.start(level);
         menuPane.getChildren().clear();
         gameModeLabel.setText(currentGameMode + " level " + level);
         menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
@@ -454,11 +501,10 @@ public class Workspace extends AppWorkspaceComponent {
         }
         return gameboard;
     }
-
-    /**
-     * placed four randomized words into the grid, where they will be lateral
-     * this is not a good way of doing it but whatever.
-     */
+    public void initialzeStatsMenu(int targetScore)
+    {
+        targetPointsLabel.setText("Target:" + "                                       " + targetScore);
+    }
     public void clearboard()
     {
             for(int i = 0; i < 4; i++)
@@ -484,7 +530,7 @@ public class Workspace extends AppWorkspaceComponent {
         }
     }
 
-    public void randomInsert()
+    public void randomInsert(String vocabList)
     {
         int counter = 0;
         String word = null;
@@ -493,7 +539,7 @@ public class Workspace extends AppWorkspaceComponent {
         int yCoor = random.nextInt(4);
 
         try {
-            word = controller.generateRandomWordFromFile("AnimalsVocab",100,2);
+            word = controller.generateRandomWordFromFile(vocabList,currentVocabLength,2);
             boolean a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
             int infiniteCounter = 0;
             while(a == false)
@@ -505,7 +551,6 @@ public class Workspace extends AppWorkspaceComponent {
                 }
                 xCoor = random.nextInt(4);
                 yCoor = random.nextInt(4);
-                System.out.println("test");
                 a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
             }
             System.out.println(word);
@@ -521,9 +566,10 @@ public class Workspace extends AppWorkspaceComponent {
                     {
                         counter = 0;
                         clearboard();
-                        randomInsert();
-                        randomInsert();
-                        randomInsert();
+                        randomInsert(vocabList);
+                        randomInsert(vocabList);
+                        randomInsert(vocabList);
+                        return;
                     }
                     int nextCoor = random.nextInt(4);
                     if (nextCoor == 0) {
@@ -588,22 +634,6 @@ public class Workspace extends AppWorkspaceComponent {
         catch(Exception e)
         {
             return false;
-        }
-    }
-    public void insertWordsIntoGameBoard(String currentGameMode)
-    {
-        String word = null;
-        try {
-            for(int i = 0; i < 4; i++)
-            {
-                word = controller.generateRandomWordFromFile(currentGameMode,100,2);
-                for(int j = 0; j < word.length(); j++) {
-                    Button button = (Button) getNodeByRowColumnIndex(i, j, gameBoard);
-                    button.setText(word.charAt(j) + "");
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
     public Node getNodeByRowColumnIndex (final int row, final int column, GridPane gridPane) {
@@ -677,7 +707,7 @@ public class Workspace extends AppWorkspaceComponent {
     {
         controller.loadUserInformation(username, password);
     }
-    public GridPane createLevelSelection() throws IOException {
+    public GridPane createLevelSelection(String vocab) throws IOException {
         GridPane levelSelection = new GridPane();
         levelSelection.setHgap(50);
         levelSelection.setVgap(50);
@@ -690,6 +720,7 @@ public class Workspace extends AppWorkspaceComponent {
                 Button button = node.createLevelSelectionButton();
                 button.setDisable(true);
                 button.setOnAction(event -> {
+                    generateNewGameBoard(vocab);
                     ct.beginTimer();
                     gamePlayScreen(button.getText());
                     controller.completedLevel(currentGameMode,Integer.parseInt(button.getText()) + 1,5);
@@ -707,9 +738,9 @@ public class Workspace extends AppWorkspaceComponent {
         HBox pane = new HBox();
         pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
-        Label label = new Label("Target:" + "                                       " + targetPointsLabel);
-        label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
-        pane.getChildren().add(label);
+        targetPointsLabel = new Label("Target:" + "                                       " + targetPointsLabel);
+        targetPointsLabel.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
+        pane.getChildren().add(targetPointsLabel);
         return pane;
     }
 
