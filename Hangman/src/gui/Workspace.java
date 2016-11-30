@@ -66,7 +66,6 @@ public class Workspace extends AppWorkspaceComponent {
     String currentGameMode;
 
     Label targetPointsLabel;
-    Label gameplayPauseLabel;
 
     int currentVocabLength;
 
