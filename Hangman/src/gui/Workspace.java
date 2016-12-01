@@ -15,6 +15,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
 import propertymanager.PropertyManager;
@@ -66,6 +67,7 @@ public class Workspace extends AppWorkspaceComponent {
     String currentGameMode;
 
     Label targetPointsLabel;
+    String[] wordsInGrid = new String[10];
 
     int currentVocabLength;
 
@@ -89,6 +91,7 @@ public class Workspace extends AppWorkspaceComponent {
         gui = app.getGUI();
         layoutGUI();     // initialize all the workspace (GUI) components including the containers and their layout
         setupHandlers(); // ... and set up event handling
+        controller.loadWordBanks();
     }
 
     public HBox getGamePlayPane() {
@@ -206,7 +209,7 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
                     //insertWordsIntoGameBoard("AnimalsVocab");
-                    generateNewGameBoard("AnimalsVocab");
+                    controller.loadWordBanks();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -352,10 +355,11 @@ public class Workspace extends AppWorkspaceComponent {
     public void generateNewGameBoard(String vocab)
     {
         clearboard();
-        randomInsert(vocab);
-        randomInsert(vocab);
-        randomInsert(vocab);
+        randomInsert(vocab,3);
+        randomInsert(vocab,3);
+        randomInsert(vocab,4);
         fillInBoard();
+        handleKeyPressedEvents();
     }
     public void randomizeColorPalette()
     {
@@ -440,6 +444,22 @@ public class Workspace extends AppWorkspaceComponent {
     public void highlightGameButton(Button button) {
         button.setStyle(button.getStyle() + ";-fx-border-color: yellow;");
     }
+    public void unHighlightGameButton(Button button)
+    {
+        button.setStyle("-fx-font-weight: bold; -fx-font-size: 30px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+    }
+    public void unHighlightAllGameButtons()
+    {
+        System.out.println("board cleared");
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                unHighlightGameButton(button);
+            }
+        }
+    }
     public GridPane createProfileScreen()
     {
         GridPane pane = new GridPane();
@@ -494,11 +514,53 @@ public class Workspace extends AppWorkspaceComponent {
                 Button button = node.createBuzzWordButton(letter);
                 gameboard.add(button, i, j);
                 counter++;
-                button.setOnAction(event -> highlightGameButton(button));
+                gameboard.setOnMouseClicked(event -> unHighlightAllGameButtons());
+                button.setOnAction(event -> unHighlightGameButton(button));
+                button.setOnDragDetected(event -> System.out.println("test"));
+                button.setOnMouseDragOver(event -> System.out.println("test"));
+                button.setOnMouseEntered(event -> highlightGameButton(button));
             }
 
         }
         return gameboard;
+    }
+    public void handleKeyPressedEvents()
+    {
+        app.getGUI().getPrimaryScene().setOnKeyTyped((KeyEvent event) -> {
+            String a = event.getCharacter().charAt(0)+"";
+            System.out.println(a);
+            SelectLettersByLetter(a.toUpperCase());
+
+        });
+    }
+    public void checkAdjacentLetters(String a, String b)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                if(button.getText().equalsIgnoreCase(""))
+                {
+                    button.setText(generateRandomLetter().toLowerCase());
+                }
+            }
+        }
+    }
+    public void SelectLettersByLetter(String letter)
+    {
+        letter = letter.toLowerCase();
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                if(button.getText().contains(letter))
+                {
+                    highlightGameButton(button);
+                }
+            }
+        }
     }
     public void initialzeStatsMenu(int targetScore)
     {
@@ -528,8 +590,15 @@ public class Workspace extends AppWorkspaceComponent {
             }
         }
     }
-
-    public void randomInsert(String vocabList)
+    public void clearWordsInGrid()
+    {
+        for(int i = 0 ;i < wordsInGrid.length; i++)
+        {
+            System.out.println("words cleared");
+            wordsInGrid[i] = null;
+        }
+    }
+    public void randomInsert(String vocabList, int wordLength)
     {
         int counter = 0;
         String word = null;
@@ -538,9 +607,10 @@ public class Workspace extends AppWorkspaceComponent {
         int yCoor = random.nextInt(4);
 
         try {
-            word = controller.generateRandomWordFromFile(vocabList,currentVocabLength,2);
+            word = controller.generateRandomWordFromFile(vocabList,wordLength);
             boolean a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
             int infiniteCounter = 0;
+            int wordCounter = 0;
             while(a == false)
             {
                 infiniteCounter++;
@@ -552,7 +622,6 @@ public class Workspace extends AppWorkspaceComponent {
                 yCoor = random.nextInt(4);
                 a = checkIfNullOnGameBoard(gameBoard,xCoor,yCoor);
             }
-            System.out.println(word);
             for(int i = 0; i < word.length(); i++)
             {
                 if( i == 0) {
@@ -565,9 +634,9 @@ public class Workspace extends AppWorkspaceComponent {
                     {
                         counter = 0;
                         clearboard();
-                        randomInsert(vocabList);
-                        randomInsert(vocabList);
-                        randomInsert(vocabList);
+                        randomInsert(vocabList,wordLength);
+                        wordCounter = 0;
+                        clearWordsInGrid();
                         return;
                     }
                     int nextCoor = random.nextInt(4);
@@ -615,8 +684,17 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                 }
             }
+            System.out.println(word);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+    }
+    public void printWordsInGrid()
+    {
+        for(int i = 0; i < wordsInGrid.length; i++)
+        {
+            System.out.println(wordsInGrid[i]);
         }
     }
     public boolean checkIfNullOnGameBoard(GridPane gameBoard, int xCoor, int yCoor)
@@ -742,16 +820,10 @@ public class Workspace extends AppWorkspaceComponent {
         pane.getChildren().add(targetPointsLabel);
         return pane;
     }
-
-
     private void setupHandlers() {
         controller = new HangmanController(app, startGame);
     }
 
-    /**
-     * This function specifies the CSS for all the UI components known at the time the workspace is initially
-     * constructed. Components added and/or removed dynamically as the application runs need to be set up separately.
-     */
     @Override
     public void initStyle() {
         PropertyManager propertyManager = PropertyManager.getManager();

@@ -30,6 +30,12 @@ public class HangmanController implements FileController {
     private GameMode currentGameMode;
     private String currentGameModeString;
     private int currentGameModeLevel;
+    private String[] animalsVocab;
+    private int animalsVocabLength = 136;
+    private String[] countriesVocab;
+    private int countriesVocabLength = 37;
+    private String[] generalVocab;
+    private int generalVocabLength = 152;
 
 
     public HangmanController(AppTemplate appTemplate, Button gameButton) {
@@ -45,15 +51,20 @@ public class HangmanController implements FileController {
     {
         return this.currentUser;
     }
-    public void retrieveLevelData(String gameMode, int level)
-    {
-        getCurrentGameMode(gameMode, level).getPersonalBest();
-        getCurrentGameMode(gameMode, level).getRequiredPoints();
-        getCurrentGameMode(gameMode, level).getTimeAllowed();
-    }
     public GameModeLevel getCurrentGameMode(String gameModeTitle, int level)
     {
         return currentUser.getGamemodes().get(gameModeTitle).getSpecificGameModeLevel(level);
+    }
+    public void loadWordBanks()
+    {
+        try {
+            animalsVocab = generateWordBank("AnimalsVocab", animalsVocabLength);
+            countriesVocab = generateWordBank("CountriesVocab", countriesVocabLength);
+            generalVocab = generateWordBank("generalVocab", generalVocabLength);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     public void start(String level)
     {
@@ -134,36 +145,46 @@ public class HangmanController implements FileController {
             return false;
         }
     }
-    public void disableLevel()
-    {
 
-    }
 
     public void completedLevel(String gamemode, int level, int score)
     {
         currentUser.levelCompleted(gamemode, level, score);
     }
-
-    public String generateRandomWordFromFile(String wordBankName, int wordBankSize, int wordSize) throws IOException {
-        FileInputStream fis = new FileInputStream("Hangman/resources/words/" + wordBankName + ".txt");
-
-        //Construct BufferedReader from InputStreamReader
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+    public String generateRandomWordFromFile(String wordBankName, int wordLength) throws IOException {
+        String word = "";
         Random random = new Random();
-        String line = null;
-        int search = random.nextInt(wordBankSize);
-        for(int i = 0; i < search; i++)
+        int randomWordIndex = 0;
+        if(wordBankName.equalsIgnoreCase("AnimalsVocab"))
         {
-            line = br.readLine();
+            randomWordIndex = random.nextInt(animalsVocabLength);
+            word = animalsVocab[randomWordIndex];
         }
-        if( line == null)
+        else if(wordBankName.equalsIgnoreCase("CountriesVocab"))
         {
-            System.out.println("for some reason the line is null");
-            line = generateRandomWordFromFile(wordBankName,wordBankSize,wordSize);
+            randomWordIndex = random.nextInt(countriesVocabLength);
+            word = countriesVocab[randomWordIndex];
         }
-
-        br.close();
-        return line;
+        else if(wordBankName.equalsIgnoreCase("generalVocab"))
+        {
+            randomWordIndex = random.nextInt(generalVocabLength);
+            word = generalVocab[randomWordIndex];
+        }
+        if(word.length() != wordLength)
+        {
+            word = generateRandomWordFromFile(wordBankName,wordLength);
+        }
+        return word;
+    }
+    public String[] generateWordBank(String fileName, int fileLength) throws IOException {
+        FileInputStream fis = new FileInputStream("Hangman/resources/words/" + fileName + ".txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        String[] wordBank = new String[fileLength];
+        for(int i = 0; i < fileLength; i++)
+        {
+            wordBank[i] = br.readLine();
+        }
+        return wordBank;
     }
     @Override
     public void handleNewRequest() {

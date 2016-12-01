@@ -48,6 +48,7 @@ public class WorkspaceNodeInitialization
         button.setMinHeight(100);
         button.setMinWidth(200);
         button.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        button.setOnMouseDragEntered(event -> System.out.println("test"));
         return button;
     }
     public Button createLogoutnButton()
