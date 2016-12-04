@@ -9,6 +9,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -16,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Line;
 import propertymanager.PropertyManager;
@@ -66,6 +68,8 @@ public class Workspace extends AppWorkspaceComponent {
     String currentPassword;
     String currentGameMode;
 
+    String runningWord = "";
+
     Label targetPointsLabel;
     String[] wordsInGrid = new String[10];
 
@@ -75,8 +79,12 @@ public class Workspace extends AppWorkspaceComponent {
     WorkspaceNodeInitialization node = new WorkspaceNodeInitialization();
     HangmanController controller;
 
+    StatsBoardSingleton statsBoardSingleton;
+
     CountDownTimer ct = new CountDownTimer();
     HBox timerPane = ct.createCountdownPane();
+
+    public boolean gameStarted = false;
     /**
      * Constructor for initializing the workspace, note that this constructor
      * will fully setup the workspace user interface for use.
@@ -129,6 +137,16 @@ public class Workspace extends AppWorkspaceComponent {
             gameBoard.setHgap(50);
             gameBoard.setVgap(50);
 
+            statsBoardSingleton = new StatsBoardSingleton();
+            this.statsBoard = statsBoardSingleton.getStatsBoard();
+            statsBoard.setOnMouseEntered(event -> {
+
+                System.out.println("board cleared");
+                runningWord = "";
+                unHighlightAllGameButtons();
+                statsBoardSingleton.clearLetters();
+            });
+            gamePlayPane.setMargin(statsBoardSingleton.getStatsBoard(), new Insets(0,0,0,100));
 
             gameModeLabel = new Label("Log in or Create a Profile!");
             gameModeLabel.setStyle("-fx-font-size: 100px;");
@@ -209,8 +227,6 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
                     //insertWordsIntoGameBoard("AnimalsVocab");
-                    controller.loadWordBanks();
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -267,64 +283,7 @@ public class Workspace extends AppWorkspaceComponent {
             gamePlayPane.setMargin(loginAccount, new Insets(100,0,0,400));
 
             gamePlayPane.getChildren().add(gameBoard);
-            statsBoard = new VBox();
-            statsBoard.setMinWidth(500);
-            statsBoard.setMinHeight(500);
-            statsBoard.setStyle("-fx-background-color: white;-fx-border-color: black;-fx-border-width: 4px;");
 
-            HBox timeRemainingPane  = node.timeRemainingPanes();
-            HBox currentLettersPane = node.createCurrentLetterPane();
-            VBox guessedWordsPane   = node.guessedWordsPane();
-            HBox totalPointsPane    = node.totalPointsPane();
-            HBox targetPoints       = this.targetPointsPane();
-
-
-
-            pauseButton = new Button("Pause Game");
-            pauseButton.setMinHeight(50);
-            pauseButton.setMinWidth(100);
-            pauseButton.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
-            pauseButton.setOnAction(event ->
-            {
-                gameBoard.setVisible(false);
-                statsBoard.getChildren().remove(pauseButton);
-                statsBoard.getChildren().add(resumeButton);
-            });
-
-            resumeButton = new Button("Resume Game");
-            resumeButton.setMinHeight(50);
-            resumeButton.setMinWidth(100);
-            resumeButton.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
-
-            resumeButton.setOnAction(event ->
-            {
-                gameBoard.setVisible(true);
-                statsBoard.getChildren().remove(resumeButton);
-                statsBoard.getChildren().add(pauseButton);
-            });
-
-
-
-            statsBoard.getChildren().add(timerPane);
-            statsBoard.getChildren().add(currentLettersPane);
-            statsBoard.getChildren().add(guessedWordsPane);
-            statsBoard.getChildren().add(totalPointsPane);
-            statsBoard.getChildren().add(targetPoints);
-            statsBoard.getChildren().add(pauseButton);
-
-
-
-            statsBoard.setMargin(timerPane ,new Insets(40,0,20,40));
-            statsBoard.setMargin(currentLettersPane,new Insets(0,0,20,40));
-            statsBoard.setMargin(guessedWordsPane,new Insets(0,0,40,40));
-            statsBoard.setMargin(totalPointsPane,new Insets(0,0,20,40));
-            statsBoard.setMargin(targetPoints,new Insets(0,0,20,40));
-            statsBoard.setMargin(pauseButton,new Insets(0,0,40,40));
-            statsBoard.setMargin(resumeButton,new Insets(0,0,40,40));
-
-
-            gamePlayPane.setMargin(statsBoard, new Insets(0,0,0,100));
-            gamePlayPane.getChildren().add(statsBoard);
             //Inset parameters go in the order Top, Right, Bottom, Left
             //so that the gameboard does not touch the menu or the statistics and is far down from the title
             gamePlayPane.setMargin(gameBoard,new Insets(20,0,0,100));
@@ -355,11 +314,13 @@ public class Workspace extends AppWorkspaceComponent {
     public void generateNewGameBoard(String vocab)
     {
         clearboard();
-        randomInsert(vocab,3);
-        randomInsert(vocab,3);
+        clearWordsInGrid();
+        randomInsert(vocab,4);
+        randomInsert(vocab,4);
         randomInsert(vocab,4);
         fillInBoard();
         handleKeyPressedEvents();
+        printWordsInGrid();
     }
     public void randomizeColorPalette()
     {
@@ -440,6 +401,7 @@ public class Workspace extends AppWorkspaceComponent {
         menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().addAll(gameBoard,statsBoard);
+        gameStarted = true;
     }
     public void highlightGameButton(Button button) {
         button.setStyle(button.getStyle() + ";-fx-border-color: yellow;");
@@ -450,7 +412,6 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void unHighlightAllGameButtons()
     {
-        System.out.println("board cleared");
         for(int i = 0; i < 4; i++)
         {
             for(int j= 0; j < 4; j++)
@@ -504,8 +465,6 @@ public class Workspace extends AppWorkspaceComponent {
     public GridPane createGameBoard()
     {
         GridPane gameboard = new GridPane();
-        int counter = 1;
-        //j is the row and i is the column
         for(int i = 0 ; i < 4; i++)
         {
             for(int j = 0; j < 4; j++)
@@ -513,25 +472,62 @@ public class Workspace extends AppWorkspaceComponent {
                 String letter = generateRandomLetter();
                 Button button = node.createBuzzWordButton(letter);
                 gameboard.add(button, i, j);
-                counter++;
-                gameboard.setOnMouseClicked(event -> unHighlightAllGameButtons());
-                button.setOnAction(event -> unHighlightGameButton(button));
-                button.setOnDragDetected(event -> System.out.println("test"));
-                button.setOnMouseDragOver(event -> System.out.println("test"));
-                button.setOnMouseEntered(event -> highlightGameButton(button));
+
+                button.setOnMouseEntered(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        if(gameStarted == true)
+                        {
+                            runningWord += button.getText();
+                            System.out.println(button.getText() + " was added to letters used");
+                            highlightGameButton(button);
+                            statsBoardSingleton.updateCurrentLetters(button.getText());
+                            checkIfWordFound(runningWord);
+                            System.out.println(runningWord);
+                        }
+                    }
+                });
             }
 
         }
         return gameboard;
     }
+    public void checkIfWordFound(String runningWord)
+    {
+        for(int i = 0; i < wordsInGrid.length; i++)
+        {
+            if(wordsInGrid[i] != null) {
+                if (wordsInGrid[i].equalsIgnoreCase(runningWord)) {
+                    statsBoardSingleton.addWordToStatsBoard(runningWord);
+                    statsBoardSingleton.clearLetters();
+                    this.runningWord = "";
+                    unHighlightAllGameButtons();
+                }
+            }
+        }
+    }
     public void handleKeyPressedEvents()
     {
+        runningWord = "";
         app.getGUI().getPrimaryScene().setOnKeyTyped((KeyEvent event) -> {
             String a = event.getCharacter().charAt(0)+"";
-            System.out.println(a);
             SelectLettersByLetter(a.toUpperCase());
+            runningWord += a;
+            for(int i = 0; i < wordsInGrid.length; i++)
+            {
+                if(runningWord.equalsIgnoreCase(wordsInGrid[i]))
+                {
+                    unHighlightAllGameButtons();
+                    runningWord = "";
+
+                }
+            }
 
         });
+    }
+    public void addSuccessfulWord(String a)
+    {
+
     }
     public void checkAdjacentLetters(String a, String b)
     {
@@ -562,10 +558,6 @@ public class Workspace extends AppWorkspaceComponent {
             }
         }
     }
-    public void initialzeStatsMenu(int targetScore)
-    {
-        targetPointsLabel.setText("Target:" + "                                       " + targetScore);
-    }
     public void clearboard()
     {
             for(int i = 0; i < 4; i++)
@@ -594,7 +586,6 @@ public class Workspace extends AppWorkspaceComponent {
     {
         for(int i = 0 ;i < wordsInGrid.length; i++)
         {
-            System.out.println("words cleared");
             wordsInGrid[i] = null;
         }
     }
@@ -684,7 +675,14 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                 }
             }
-            System.out.println(word);
+            for(int i = 0; i < 10; i++)
+            {
+                if(wordsInGrid[i] == null)
+                {
+                    wordsInGrid[i] = word;
+                    break;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -694,7 +692,10 @@ public class Workspace extends AppWorkspaceComponent {
     {
         for(int i = 0; i < wordsInGrid.length; i++)
         {
-            System.out.println(wordsInGrid[i]);
+            if(wordsInGrid[i] != null)
+            {
+                System.out.println((1+i) + ") " + wordsInGrid[i]);
+            }
         }
     }
     public boolean checkIfNullOnGameBoard(GridPane gameBoard, int xCoor, int yCoor)
@@ -757,7 +758,7 @@ public class Workspace extends AppWorkspaceComponent {
         Label passwordLabel = new Label("Enter Password: ");
         passwordLabel.setMinSize(200,50);
         passwordLabel.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 2px;");
-        TextField passwordField = new TextField();
+        PasswordField passwordField = new PasswordField();
         passwordField.setStyle("-fx-border-color: black;-fx-border-width: 2px;");
         pane.add(userNameLabel,0,1);
         pane.add(userNameField,1,1);
@@ -798,7 +799,6 @@ public class Workspace extends AppWorkspaceComponent {
                 button.setDisable(true);
                 button.setOnAction(event -> {
                     generateNewGameBoard(vocab);
-                    ct.beginTimer();
                     gamePlayScreen(button.getText());
                     controller.completedLevel(currentGameMode,Integer.parseInt(button.getText()) + 1,5);
                     controller.updateLevelCurrentlyOn();
@@ -809,16 +809,6 @@ public class Workspace extends AppWorkspaceComponent {
             }
         }
         return levelSelection;
-    }
-    public HBox targetPointsPane()
-    {
-        HBox pane = new HBox();
-        pane.setMinSize(400,80);
-        pane.setMaxSize(400,80);
-        targetPointsLabel = new Label("Target:" + "                                       " + targetPointsLabel);
-        targetPointsLabel.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
-        pane.getChildren().add(targetPointsLabel);
-        return pane;
     }
     private void setupHandlers() {
         controller = new HangmanController(app, startGame);

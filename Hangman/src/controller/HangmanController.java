@@ -71,7 +71,7 @@ public class HangmanController implements FileController {
         currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).setRequiredPoints(20 + Integer.parseInt(level)* 10);
         Workspace workspace = (Workspace) appTemplate.getWorkspaceComponent();
         int targetScore = currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).getRequiredPoints();
-        workspace.initialzeStatsMenu(targetScore);
+        //workspace.initialzeStatsMenu(targetScore);
     }
     public void setCurrentGameModeString(String gameMode)
     {
@@ -126,10 +126,6 @@ public class HangmanController implements FileController {
             currentUser = jsonLoader.readValue(new File(".\\Hangman\\src\\data\\" + username + ".json"), User.class);
             if(password.contains(currentUser.getUserPassWord())) {
 
-                out.println("login successful" + currentUser.getGamemodes().toString());
-
-
-                out.println(currentUser.getGamemodes().get("general").getSpecificGameModeLevel(1).isCompleted());
                 completedLevel("general",1,1);
                 completedLevel("animals",1,1);
                 completedLevel("countries",1,1);

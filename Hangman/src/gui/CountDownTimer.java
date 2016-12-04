@@ -22,10 +22,9 @@ import javafx.util.Duration;
  */
 public class CountDownTimer
 {
-    private static final Integer STARTTIME = 15;
     private Timeline timeline;
     private Label timerLabel = new Label();
-    private Integer timeSeconds = STARTTIME;
+    private Integer timeSeconds = 0;
 
     public HBox createCountdownPane() {
 
@@ -37,7 +36,7 @@ public class CountDownTimer
         if (timeline != null) {
             timeline.stop();
         }
-        timeSeconds = STARTTIME;
+        timeSeconds = 0;
 
         // update timerLabel
         timerLabel.setText(timeSeconds.toString());
@@ -58,7 +57,7 @@ public class CountDownTimer
         HBox pane = new HBox();
         pane.setMinSize(400,80);
         pane.setMaxSize(400,80);
-        pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
+        //pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
 
 
         Label label = new Label("Time Remaining: ");
@@ -69,8 +68,9 @@ public class CountDownTimer
         pane.getChildren().addAll(label, timerLabel);
         return pane;
     }
-    public void beginTimer()
+    public void beginTimer(int time)
     {
+        timeSeconds  = time;
         timeline.playFromStart();
     }
 }

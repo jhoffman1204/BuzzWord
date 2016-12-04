@@ -151,17 +151,6 @@ public class WorkspaceNodeInitialization
         pane.getChildren().add(label);
         return pane;
     }
-    public VBox guessedWordsPane()
-    {
-        VBox pane = new VBox();
-        pane.setMinSize(400,80);
-        pane.setMaxSize(400,80);
-        pane.setStyle("-fx-background-color: beige;-fx-border-color: black;-fx-border-width: 4px;");
-        Label label = new Label("word" + "                                          " + "25");
-        label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
-        pane.getChildren().add(label);
-        return pane;
-    }
     public HBox totalPointsPane()
     {
         HBox pane = new HBox();
