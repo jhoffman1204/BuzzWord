@@ -317,9 +317,18 @@ public class Workspace extends AppWorkspaceComponent {
         statsBoardSingleton.resetStatBar();
         statsBoardSingleton.startTimer(10);
         clearWordsInGrid();
-        randomInsert(vocab,5);
-        randomInsert(vocab,5);
-        randomInsert(vocab,5);
+        if(randomInsert(vocab,5) == false)
+        {
+            return;
+        }
+        if(randomInsert(vocab,5) == false)
+        {
+            return;
+        }
+        if(randomInsert(vocab,5) == false)
+        {
+            return;
+        }
         fillInBoard();
         handleKeyPressedEvents();
         printWordsInGrid();
@@ -412,7 +421,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void unHighlightGameButton(Button button)
     {
-        button.setStyle("-fx-font-weight: bold; -fx-font-size: 30px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        button.setStyle("-fx-background-radius: 30px;-fx-font-weight: bold; -fx-font-size: 30px;-fx-background-color: #FFF7C0;-fx-border-radius:30px;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
     }
     public void unHighlightAllGameButtons()
     {
@@ -637,7 +646,7 @@ public class Workspace extends AppWorkspaceComponent {
             wordsInGrid[i] = null;
         }
     }
-    public void randomInsert(String vocabList, int wordLength)
+    public boolean randomInsert(String vocabList, int wordLength)
     {
         int counter = 0;
         String word = null;
@@ -657,7 +666,7 @@ public class Workspace extends AppWorkspaceComponent {
                 {
                     System.out.println("a word was trapped in another word");
                     randomInsert(vocabList,wordLength);
-
+                    return false;
                 }
                 xCoor = random.nextInt(4);
                 yCoor = random.nextInt(4);
@@ -673,11 +682,13 @@ public class Workspace extends AppWorkspaceComponent {
                     counter++;
                     if(counter > 50)
                     {
+                        counter = 0;
+                        System.out.println("a word was trapped");
                         clearboard();
-                        randomInsert(vocabList,wordLength);
-                        //clearWordsInGrid();
+                        clearWordsInGrid();
+                        generateNewGameBoard(vocabList);
                         //this made the board not always have all the solutions
-                        return;
+                        return false;
                     }
                     int nextCoor = random.nextInt(4);
                     if (nextCoor == 0) {
@@ -738,14 +749,12 @@ public class Workspace extends AppWorkspaceComponent {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        return true;
     }
     public void printWordsInGrid()
     {
         for(int i = 0; i < wordsInGrid.length; i++)
         {
-            System.out.println("the printwordsingrid method is working");
-            System.out.println(wordsInGrid[i]);
             if(wordsInGrid[i] != null)
             {
                 System.out.println((1+i) + ") " + wordsInGrid[i]);
