@@ -1,5 +1,7 @@
 package gui;
 
+import apptemplate.AppTemplate;
+import controller.PauseGameHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -24,15 +26,20 @@ public class StatsBoardSingleton
 
     Label targetPointsLabel = null;
 
-    CountDownTimer ct = new CountDownTimer();
-    HBox timerPane = ct.createCountdownPane();
+    CountDownTimer ct;
+    HBox timerPane;
 
     private int totalPoints;
     private String currentlySelectedLetters = "";
     private String[] currentlyGuessedWords = new String[10];
+    private AppTemplate app;
 
-    public StatsBoardSingleton()
+    public StatsBoardSingleton(AppTemplate app)
     {
+        ct = new CountDownTimer(app);
+        timerPane = ct.createCountdownPane();
+        this.app = app;
+
         currentLettersPane = this.createCurrentLetterPane();
         guessedWordsPane = this.createGuessedWordsPane();
         totalPointsPane = this.createTotalPointsPane();
@@ -68,13 +75,77 @@ public class StatsBoardSingleton
         statsBoard.setMargin(resumeButton,       new Insets(0,0,40,40));
 
 
+        PauseGameHandler handler = new PauseGameHandler(app);
+        pauseButton.setOnAction(handler);
+
+        resumeButton.setOnAction(event ->{
+            this.resumeGame();
+        });
+
         updateTargetPoints(100);
 
-        startTimer(60);
+    }
+    public void pauseGame()
+    {
+        statsBoard.getChildren().remove(pauseButton);
+        statsBoard.getChildren().add(resumeButton);
+    }
+    public void resumeGame()
+    {
+        statsBoard.getChildren().remove(resumeButton);
+        statsBoard.getChildren().add(pauseButton);
+        Workspace workspace = (Workspace) app.getWorkspaceComponent();
+        workspace.resumeGame();
+    }
+    public void showMissingWords(String[] wordsInGrid)
+    {
+        boolean[] wordfound = new boolean[10];
+
+        for(int i = 0 ; i < wordsInGrid.length; i++)
+        {
+            for(int j = 0 ; j < currentlyGuessedWords.length; j++)
+            {
+                if(wordsInGrid[i] != null) {
+                    System.out.println("was not null");
+                    if (wordsInGrid[i].equalsIgnoreCase(currentlyGuessedWords[j])) {
+                        wordfound[i] = true;
+                        System.out.println("they were equal");
+                    }
+                }
+            }
+        }
+        for(int i = 0; i < 10; i++)
+        {
+            if(wordfound[i] == true)
+            {
+                System.out.print(wordsInGrid[i] + " was not found");
+            }
+        }
+    }
+    public void addNotFoundWordsToList(String[] words)
+    {
+        for(int i = 0 ; i < words.length; i++)
+        {
+            if(words[i] != null) {
+                Label label = new Label(words[i]);
+                label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;-fx-text-fill: RED");
+                guessedWordsPane.getChildren().add(label);
+            }
+        }
     }
     public void startTimer(int time)
     {
         ct.beginTimer(time);
+    }
+    public void resetStatBar()
+    {
+        this.guessedWordsPane.getChildren().clear();
+        this.currentLettersPane.getChildren().clear();
+        this.totalPoints = 0;
+    }
+    public int getTotalPoints()
+    {
+        return this.totalPoints;
     }
     public void addWordToStatsBoard(String word)
     {
@@ -160,11 +231,6 @@ public class StatsBoardSingleton
         targetPointsLabel.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
         pane.getChildren().add(targetPointsLabel);
         return pane;
-    }
-    public static VBox getStatBoardSingleton()
-    {
-        StatsBoardSingleton a = new StatsBoardSingleton();
-        return a.getStatsBoard();
     }
     public VBox getStatsBoard()
     {

@@ -66,14 +66,19 @@ public class Workspace extends AppWorkspaceComponent {
 
     String currentUserName;
     String currentPassword;
+
     String currentGameMode;
+    int    currentLevel;
 
     String runningWord = "";
 
     Label targetPointsLabel;
     String[] wordsInGrid = new String[10];
+    boolean[] wordsFound  = new boolean[10];
 
     int currentVocabLength;
+
+    boolean gameWon = false;
 
     String userName;
     WorkspaceNodeInitialization node = new WorkspaceNodeInitialization();
@@ -81,9 +86,7 @@ public class Workspace extends AppWorkspaceComponent {
 
     StatsBoardSingleton statsBoardSingleton;
 
-    CountDownTimer ct = new CountDownTimer();
-    HBox timerPane = ct.createCountdownPane();
-
+    int currentTargetScore = 0;
     public boolean gameStarted = false;
     /**
      * Constructor for initializing the workspace, note that this constructor
@@ -137,11 +140,9 @@ public class Workspace extends AppWorkspaceComponent {
             gameBoard.setHgap(50);
             gameBoard.setVgap(50);
 
-            statsBoardSingleton = new StatsBoardSingleton();
+            statsBoardSingleton = new StatsBoardSingleton(this.app);
             this.statsBoard = statsBoardSingleton.getStatsBoard();
             statsBoard.setOnMouseEntered(event -> {
-
-                System.out.println("board cleared");
                 runningWord = "";
                 unHighlightAllGameButtons();
                 statsBoardSingleton.clearLetters();
@@ -180,7 +181,6 @@ public class Workspace extends AppWorkspaceComponent {
                         gameModeLabel.setText("<-- Select a Level");
                     }
                     if(newValue.intValue() == 1){
-                        currentVocabLength = 148;
                         try {
                             levelSelectScreen("GeneralVocab");
                         } catch (IOException e) {
@@ -314,13 +314,17 @@ public class Workspace extends AppWorkspaceComponent {
     public void generateNewGameBoard(String vocab)
     {
         clearboard();
+        statsBoardSingleton.resetStatBar();
+        statsBoardSingleton.startTimer(10);
         clearWordsInGrid();
-        randomInsert(vocab,4);
-        randomInsert(vocab,4);
-        randomInsert(vocab,4);
+        randomInsert(vocab,5);
+        randomInsert(vocab,5);
+        randomInsert(vocab,5);
         fillInBoard();
         handleKeyPressedEvents();
         printWordsInGrid();
+        gameWon = false;
+        gameBoard.setDisable(false);
     }
     public void randomizeColorPalette()
     {
@@ -395,7 +399,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void gamePlayScreen(String level)
     {
-        controller.start(level);
+        this.currentTargetScore = controller.getTargetScore(level);
         menuPane.getChildren().clear();
         gameModeLabel.setText(currentGameMode + " level " + level);
         menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
@@ -479,11 +483,9 @@ public class Workspace extends AppWorkspaceComponent {
                         if(gameStarted == true)
                         {
                             runningWord += button.getText();
-                            System.out.println(button.getText() + " was added to letters used");
                             highlightGameButton(button);
                             statsBoardSingleton.updateCurrentLetters(button.getText());
                             checkIfWordFound(runningWord);
-                            System.out.println(runningWord);
                         }
                     }
                 });
@@ -501,10 +503,35 @@ public class Workspace extends AppWorkspaceComponent {
                     statsBoardSingleton.addWordToStatsBoard(runningWord);
                     statsBoardSingleton.clearLetters();
                     this.runningWord = "";
+                    for(int j = 0; j < wordsInGrid.length; j++)
+                    {
+                        if(runningWord.equalsIgnoreCase(wordsInGrid[i]))
+                        {
+                            wordsFound[i] = true;
+                        }
+                    }
+                    if(statsBoardSingleton.getTotalPoints() >= currentTargetScore)
+                    {
+                        gameWon = true;
+                        System.out.println("you have achieved the required amount of points for this game");
+                    }
                     unHighlightAllGameButtons();
                 }
             }
         }
+    }
+    public void printFound()
+    {
+        String[] wordsNotFound = new String[10];
+        for(int i = 0 ;i < wordsFound.length; i++)
+        {
+            if(wordsFound[i] == false && wordsInGrid[i] != null)
+            {
+                wordsNotFound[i] = wordsInGrid[i];
+            }
+        }
+        statsBoardSingleton.addNotFoundWordsToList(wordsNotFound);
+
     }
     public void handleKeyPressedEvents()
     {
@@ -519,15 +546,36 @@ public class Workspace extends AppWorkspaceComponent {
                 {
                     unHighlightAllGameButtons();
                     runningWord = "";
-
                 }
             }
-
         });
     }
-    public void addSuccessfulWord(String a)
+    public void pauseGame()
     {
-
+        gameBoard.setVisible(false);
+        statsBoardSingleton.pauseGame();
+    }
+    public void resumeGame()
+    {
+        gameBoard.setVisible(true);
+    }
+    public void gameEnd()
+    {
+        gameBoard.setDisable(true);
+        if(gameWon == true)
+        {
+            gameModeLabel.setText("You have defeated level " + currentLevel);
+            System.out.println(statsBoardSingleton.getTotalPoints());
+            System.out.println(currentGameMode + " " + currentLevel);
+            controller.completedLevel(currentGameMode,currentLevel,statsBoardSingleton.getTotalPoints());
+            controller.updateLevelCurrentlyOn();
+        }
+        else {
+            gameModeLabel.setText("You lost level " + currentLevel);
+        }
+        printFound();
+        String[] notGuessedWords = new String[10];
+        //statsBoardSingleton.showMissingWords(wordsInGrid);
     }
     public void checkAdjacentLetters(String a, String b)
     {
@@ -605,9 +653,11 @@ public class Workspace extends AppWorkspaceComponent {
             while(a == false)
             {
                 infiniteCounter++;
-                if(infiniteCounter > 20)
+                if(infiniteCounter > 100)
                 {
-                    return;
+                    System.out.println("a word was trapped in another word");
+                    randomInsert(vocabList,wordLength);
+
                 }
                 xCoor = random.nextInt(4);
                 yCoor = random.nextInt(4);
@@ -621,13 +671,12 @@ public class Workspace extends AppWorkspaceComponent {
                 }
                 if( i > 0) {
                     counter++;
-                    if(counter > 20)
+                    if(counter > 50)
                     {
-                        counter = 0;
                         clearboard();
                         randomInsert(vocabList,wordLength);
-                        wordCounter = 0;
-                        clearWordsInGrid();
+                        //clearWordsInGrid();
+                        //this made the board not always have all the solutions
                         return;
                     }
                     int nextCoor = random.nextInt(4);
@@ -679,7 +728,10 @@ public class Workspace extends AppWorkspaceComponent {
             {
                 if(wordsInGrid[i] == null)
                 {
+                    System.out.println("a word has been added");
+                    System.out.println(i);
                     wordsInGrid[i] = word;
+                    System.out.println(wordsInGrid[i]);
                     break;
                 }
             }
@@ -692,6 +744,8 @@ public class Workspace extends AppWorkspaceComponent {
     {
         for(int i = 0; i < wordsInGrid.length; i++)
         {
+            System.out.println("the printwordsingrid method is working");
+            System.out.println(wordsInGrid[i]);
             if(wordsInGrid[i] != null)
             {
                 System.out.println((1+i) + ") " + wordsInGrid[i]);
@@ -726,9 +780,21 @@ public class Workspace extends AppWorkspaceComponent {
         }
         return result;
     }
-    public void enableLevelSelectionNode(int row, int column)
+    public void enableLevelSelectionNode(int levelAvailable)
     {
-        this.getNodeByRowColumnIndex(row,column,this.levelSelectBoard).setDisable(false);
+        int counter = 0;
+        for(int i = 0; i < 2; i++)
+        {
+            for(int j = 0; j < 4; j++)
+            {
+                this.getNodeByRowColumnIndex(i,j,this.levelSelectBoard).setDisable(false);
+                counter++;
+                if(counter == levelAvailable)
+                {
+                    return;
+                }
+            }
+        }
     }
     public void disableLevelSelectionNode(int row, int column)
     {
@@ -798,10 +864,10 @@ public class Workspace extends AppWorkspaceComponent {
                 Button button = node.createLevelSelectionButton();
                 button.setDisable(true);
                 button.setOnAction(event -> {
-                    generateNewGameBoard(vocab);
                     gamePlayScreen(button.getText());
-                    controller.completedLevel(currentGameMode,Integer.parseInt(button.getText()) + 1,5);
-                    controller.updateLevelCurrentlyOn();
+                    this.currentLevel = Integer.parseInt(button.getText());
+                    statsBoardSingleton.updateTargetPoints(currentTargetScore);
+                    generateNewGameBoard(vocab);
                 });
                 button.setText(counter + "");
                 levelSelection.add(button, j, i);

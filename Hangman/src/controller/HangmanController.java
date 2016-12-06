@@ -30,6 +30,7 @@ public class HangmanController implements FileController {
     private GameMode currentGameMode;
     private String currentGameModeString;
     private int currentGameModeLevel;
+
     private String[] animalsVocab;
     private int animalsVocabLength = 136;
     private String[] countriesVocab;
@@ -66,12 +67,13 @@ public class HangmanController implements FileController {
             e.printStackTrace();
         }
     }
-    public void start(String level)
+    public int getTargetScore(String level)
     {
         currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).setRequiredPoints(20 + Integer.parseInt(level)* 10);
         Workspace workspace = (Workspace) appTemplate.getWorkspaceComponent();
         int targetScore = currentUser.getGamemodes().get(currentGameModeString).getSpecificGameModeLevel(Integer.parseInt(level)).getRequiredPoints();
-        //workspace.initialzeStatsMenu(targetScore);
+        return targetScore;
+
     }
     public void setCurrentGameModeString(String gameMode)
     {
@@ -86,19 +88,24 @@ public class HangmanController implements FileController {
             for(int j = 0; j < 4; j++)
             {
                 workspace.disableLevelSelectionNode(i,j);
-            }
-        }
-        for(int i = 0; i < 2; i++)
-        {
-            for(int j = 0; j < 4; j++)
-            {
-                if(currentUser.getGamemodes().get(this.currentGameModeString).getSpecificGameModeLevel(counter).getPersonalBest() != 0)
+                if(currentUser.getGamemodes().get(this.currentGameModeString).getSpecificGameModeLevel(counter).isCompleted() == true)
                 {
-                    workspace.enableLevelSelectionNode(i,j);
+                    counter++;
                 }
-                counter++;
             }
+            workspace.enableLevelSelectionNode(counter);
         }
+//        for(int i = 0; i < 2; i++)
+//        {
+//            for(int j = 0; j < 4; j++)
+//            {
+//                if(currentUser.getGamemodes().get(this.currentGameModeString).getSpecificGameModeLevel(counter).getPersonalBest() != 0)
+//                {
+//                    workspace.enableLevelSelectionNode(i,j);
+//                }
+//                counter++;
+//            }
+//        }
     }
     public void createNewUser(String username, String password)
     {
@@ -112,7 +119,7 @@ public class HangmanController implements FileController {
         ObjectMapper jsonWriter = new ObjectMapper();
         File selectedFile = new File("./Hangman/src/data/" + currentUser.getUserName() + ".json");
         try {
-            jsonWriter.writeValue(selectedFile, currentUser);
+            jsonWriter.writerWithDefaultPrettyPrinter().writeValue(selectedFile, currentUser);
             out.println("gave saved");
         } catch (IOException e) {
             e.printStackTrace();
@@ -159,7 +166,7 @@ public class HangmanController implements FileController {
         else if(wordBankName.equalsIgnoreCase("CountriesVocab"))
         {
             randomWordIndex = random.nextInt(countriesVocabLength);
-            word = countriesVocab[randomWordIndex];
+            word = countriesVocab[randomWordIndex].toLowerCase();
         }
         else if(wordBankName.equalsIgnoreCase("generalVocab"))
         {

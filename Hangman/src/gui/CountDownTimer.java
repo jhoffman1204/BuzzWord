@@ -1,4 +1,6 @@
 package gui;
+import apptemplate.AppTemplate;
+import controller.GameEndHandler;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -25,7 +27,12 @@ public class CountDownTimer
     private Timeline timeline;
     private Label timerLabel = new Label();
     private Integer timeSeconds = 0;
+    private AppTemplate app;
 
+    public CountDownTimer(AppTemplate app)
+    {
+        this.app = app;
+    }
     public HBox createCountdownPane() {
 
         // Configure the Label
@@ -51,6 +58,8 @@ public class CountDownTimer
                                     timeSeconds.toString());
                             if (timeSeconds <= 0) {
                                 timeline.stop();
+                                GameEndHandler handler = new GameEndHandler(this.app);
+                                handler.handle(new ActionEvent());
                             }
                         }));
 
