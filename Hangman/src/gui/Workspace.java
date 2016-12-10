@@ -61,6 +61,7 @@ public class Workspace extends AppWorkspaceComponent {
     Label       gameModeLabel;
     Button      startGame;
     Button      backButton;
+    Button      replayButton;
     Button      pauseButton;
     Button      resumeButton;
 
@@ -172,6 +173,7 @@ public class Workspace extends AppWorkspaceComponent {
             loginAccount = this.createLoginScreen();
             levelSelectBoard = this.createLevelSelection("AnimalsVocab");
             logoutButton = node.createLogoutnButton();
+
             gamePlayPane.setMargin(levelSelectBoard,new Insets(30,0,0,100));
             selectLevel.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
                 @Override
@@ -182,7 +184,7 @@ public class Workspace extends AppWorkspaceComponent {
                     }
                     if(newValue.intValue() == 1){
                         try {
-                            levelSelectScreen("GeneralVocab");
+                            levelSelectScreen("general");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -195,7 +197,7 @@ public class Workspace extends AppWorkspaceComponent {
                     {
                         currentVocabLength = 134;
                         try {
-                            levelSelectScreen("AnimalsVocab");
+                            levelSelectScreen("Animals");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -208,7 +210,7 @@ public class Workspace extends AppWorkspaceComponent {
                     {
                         currentVocabLength = 36;
                         try {
-                            levelSelectScreen("CountriesVocab");
+                            levelSelectScreen("Countries");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -227,6 +229,7 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
                     //insertWordsIntoGameBoard("AnimalsVocab");
+                    controller.savePassword();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -271,6 +274,7 @@ public class Workspace extends AppWorkspaceComponent {
                 homeScreen();
             });
             backButton.setOnAction(event -> loginScreen());
+
             menuPane.getChildren().addAll(selectLevel,createButton,loginButton,viewHelpButton,changeColorButton);
             this.setPaneMargins();
             changeColorButton.setAlignment(Pos.BASELINE_LEFT);
@@ -311,22 +315,33 @@ public class Workspace extends AppWorkspaceComponent {
             e.printStackTrace();
         }
     }
+    public void replayLevel()
+    {
+        gameModeLabel.setText(currentGameMode + "level " + currentLevel);
+        generateNewGameBoard(currentGameMode);
+    }
     public void generateNewGameBoard(String vocab)
     {
         clearboard();
         statsBoardSingleton.resetStatBar();
+        try
+        {
+            statsBoardSingleton.updatePreviousBestPane(controller.getCurrentUser().getGamemodes().get(vocab).getSpecificGameModeLevel(currentLevel).getPersonalBest() + "");
+        }
+        catch (Exception e)
+        {
+            System.out.println("there was no previous best");
+        }
+        //The amount of time the user will have to complete the level
         statsBoardSingleton.startTimer(10);
         clearWordsInGrid();
-        if(randomInsert(vocab,5) == false)
-        {
+        if(randomInsert(vocab,5) == false) {
             return;
         }
-        if(randomInsert(vocab,5) == false)
-        {
+        if(randomInsert(vocab,5) == false) {
             return;
         }
-        if(randomInsert(vocab,5) == false)
-        {
+        if(randomInsert(vocab,5) == false) {
             return;
         }
         fillInBoard();
@@ -464,7 +479,7 @@ public class Workspace extends AppWorkspaceComponent {
             handler.setUsername(userNameField.getText());
             handler.setPassword(passwordField.getText());
             handler.handle(new ActionEvent());
-            this.loadUser(userNameField.getText(),passwordField.getText());
+            this.loadUser(userNameField.getText(),controller.encrpyPassword(passwordField.getText()));
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));
@@ -585,6 +600,7 @@ public class Workspace extends AppWorkspaceComponent {
         printFound();
         String[] notGuessedWords = new String[10];
         //statsBoardSingleton.showMissingWords(wordsInGrid);
+        statsBoardSingleton.displayReplayButton();
     }
     public void checkAdjacentLetters(String a, String b)
     {
@@ -842,7 +858,7 @@ public class Workspace extends AppWorkspaceComponent {
         CreateUserHandler handler = new CreateUserHandler(app,this);
         Button submit = new Button("Login Profile!");
         submit.setOnAction(event -> {
-            if(controller.loadUserInformation(userNameField.getText(),passwordField.getText()) == true)
+            if(controller.loadUserInformation(userNameField.getText(),controller.encrpyPassword(passwordField.getText())) == true)
             {
                 homeScreen();
             }

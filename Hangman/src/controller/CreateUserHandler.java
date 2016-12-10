@@ -34,7 +34,9 @@ public class CreateUserHandler implements EventHandler<ActionEvent>
     @Override
     public void handle(ActionEvent event)
     {
-        controller.createNewUser(this.username,this.password);
+        String encypyedPassword = "";
+        encypyedPassword = controller.encrpyPassword(password);
+        controller.createNewUser(this.username,encypyedPassword);
         workspace.homeScreen();
     }
 }

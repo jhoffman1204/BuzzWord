@@ -9,6 +9,8 @@ import gui.Workspace;
 import javafx.scene.control.Button;
 
 import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.stage.FileChooser;
@@ -38,7 +40,7 @@ public class HangmanController implements FileController {
     private String[] generalVocab;
     private int generalVocabLength = 152;
 
-
+    Random random = new Random();
     public HangmanController(AppTemplate appTemplate, Button gameButton) {
         this(appTemplate);
     }
@@ -55,6 +57,29 @@ public class HangmanController implements FileController {
     public GameModeLevel getCurrentGameMode(String gameModeTitle, int level)
     {
         return currentUser.getGamemodes().get(gameModeTitle).getSpecificGameModeLevel(level);
+    }
+    public void savePassword()
+    {
+
+    }
+    public String encrpyPassword(String password)
+    {
+        String pass = password;
+        StringBuffer sb = null;
+        try {
+            MessageDigest a = MessageDigest.getInstance("MD5");
+            a.update(password.getBytes());
+            byte[] b = a.digest();
+            sb= new StringBuffer();
+            for(byte b1 : b)
+            {
+                sb.append(Integer.toHexString(b1 & 0xff).toString());
+            }
+        }
+        catch(NoSuchAlgorithmException e) {
+            System.out.println("there was a problem with the Message Digest method");
+        }
+        return sb.toString();
     }
     public void loadWordBanks()
     {
@@ -156,28 +181,30 @@ public class HangmanController implements FileController {
     }
     public String generateRandomWordFromFile(String wordBankName, int wordLength) throws IOException {
         String word = "";
-        Random random = new Random();
         int randomWordIndex = 0;
-        if(wordBankName.equalsIgnoreCase("AnimalsVocab"))
+        if(wordBankName.equalsIgnoreCase("Animals"))
         {
             randomWordIndex = random.nextInt(animalsVocabLength);
             word = animalsVocab[randomWordIndex];
         }
-        else if(wordBankName.equalsIgnoreCase("CountriesVocab"))
+        else if(wordBankName.equalsIgnoreCase("Countries"))
         {
             randomWordIndex = random.nextInt(countriesVocabLength);
             word = countriesVocab[randomWordIndex].toLowerCase();
         }
-        else if(wordBankName.equalsIgnoreCase("generalVocab"))
+        else if(wordBankName.equalsIgnoreCase("general"))
         {
             randomWordIndex = random.nextInt(generalVocabLength);
             word = generalVocab[randomWordIndex];
         }
         if(word.length() != wordLength)
         {
-            word = generateRandomWordFromFile(wordBankName,wordLength);
+            return generateRandomWordFromFile(wordBankName,wordLength);
         }
-        return word;
+        else
+        {
+            return word;
+        }
     }
     public String[] generateWordBank(String fileName, int fileLength) throws IOException {
         FileInputStream fis = new FileInputStream("Hangman/resources/words/" + fileName + ".txt");

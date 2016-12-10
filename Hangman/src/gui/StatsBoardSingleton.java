@@ -2,6 +2,8 @@ package gui;
 
 import apptemplate.AppTemplate;
 import controller.PauseGameHandler;
+import controller.ReplayGameHandler;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -23,11 +25,16 @@ public class StatsBoardSingleton
     private HBox targetPoints;
     private Button pauseButton;
     private Button resumeButton;
+    private Button replayButton;
+
 
     Label targetPointsLabel = null;
 
     CountDownTimer ct;
     HBox timerPane;
+
+    String previousBest = "";
+    Label previousBestLabel = new Label("");
 
     private int totalPoints;
     private String currentlySelectedLetters = "";
@@ -46,6 +53,7 @@ public class StatsBoardSingleton
         targetPoints = this.createTargetPointsPane();
         pauseButton = this.createPauseButton();
         resumeButton = this.createResumeButton();
+        replayButton = this.createReplayButton();
 
         statsBoard = new VBox();
         statsBoard.setMinWidth(500);
@@ -61,6 +69,7 @@ public class StatsBoardSingleton
         pointsPane.setMargin(guessedWordsPane, new Insets(0,20,0,20));
         pointsPane.setMargin(totalPointsPane,  new Insets(0,20,0,20));
 
+        statsBoard.getChildren().add(previousBestLabel);
         statsBoard.getChildren().add(timerPane);
         statsBoard.getChildren().add(currentLettersPane);
         statsBoard.getChildren().add(pointsPane);
@@ -73,7 +82,7 @@ public class StatsBoardSingleton
         statsBoard.setMargin(targetPoints,       new Insets(0,0,20,40));
         statsBoard.setMargin(pauseButton,        new Insets(0,0,40,40));
         statsBoard.setMargin(resumeButton,       new Insets(0,0,40,40));
-
+        statsBoard.setMargin(replayButton,       new Insets(0,0,40,40));
 
         PauseGameHandler handler = new PauseGameHandler(app);
         pauseButton.setOnAction(handler);
@@ -81,9 +90,29 @@ public class StatsBoardSingleton
         resumeButton.setOnAction(event ->{
             this.resumeGame();
         });
+        replayButton.setOnAction(event -> {
+            this.removeReplayButton();
+            ReplayGameHandler replayHandler = new ReplayGameHandler(app);
+            replayHandler.handle(new ActionEvent());
+        });
 
         updateTargetPoints(100);
 
+    }
+    public void updatePreviousBestPane(String previousBest)
+    {
+        this.previousBest = previousBest;
+        this.previousBestLabel.setText("Previous best" + previousBest);
+    }
+    public void displayReplayButton()
+    {
+        statsBoard.getChildren().remove(pauseButton);
+        statsBoard.getChildren().add(this.replayButton);
+    }
+    public void removeReplayButton()
+    {
+        statsBoard.getChildren().remove(this.replayButton);
+        statsBoard.getChildren().add(pauseButton);
     }
     public void pauseGame()
     {
@@ -266,6 +295,15 @@ public class StatsBoardSingleton
         });
 
         return resumeButton;
+    }
+
+    public Button createReplayButton()
+    {
+        Button button = new Button("Replay Level");
+        button.setMinHeight(50);
+        button.setMinWidth(100);
+        button.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        return button;
     }
 
 
