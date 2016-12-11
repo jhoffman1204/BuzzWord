@@ -98,6 +98,13 @@ public class Workspace extends AppWorkspaceComponent {
 
     int currentTargetScore = 0;
     public boolean gameStarted = false;
+
+    Button recentButton;
+    String apexLetter = "";
+    String recentLetter = "";
+
+    boolean firstButtonPressed = false;
+
     /**
      * Constructor for initializing the workspace, note that this constructor
      * will fully setup the workspace user interface for use.
@@ -156,6 +163,8 @@ public class Workspace extends AppWorkspaceComponent {
             this.statsBoard = statsBoardSingleton.getStatsBoard();
             statsBoard.setOnMouseEntered(event -> {
                 runningWord = "";
+                recentLetter = "";
+                apexLetter = "";
                 unHighlightAllGameButtons();
                 statsBoardSingleton.clearLetters();
             });
@@ -242,6 +251,8 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
                     //insertWordsIntoGameBoard("AnimalsVocab");
+
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -333,6 +344,12 @@ public class Workspace extends AppWorkspaceComponent {
         gameModeLabel.setText(currentGameMode + "level " + currentLevel);
         generateNewGameBoard(currentGameMode);
     }
+    public void iterateLevel()
+    {
+        statsBoardSingleton.removeReplayButton();
+        this.currentLevel = currentLevel + 1;
+        gameModeLabel.setText(currentGameMode + "level " + currentLevel);
+    }
     public void generateNewGameBoard(String vocab)
     {
         resetWordsFound();
@@ -356,8 +373,9 @@ public class Workspace extends AppWorkspaceComponent {
             System.out.println("there was no previous best");
         }
         //The amount of time the user will have to complete the level
-        statsBoardSingleton.startTimer(10);
+        statsBoardSingleton.startTimer(50);
         clearWordsInGrid();
+        recentButton = null;
         if(randomInsert(vocab,wordLength) == false) {
             return;
         }
@@ -459,6 +477,31 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void highlightGameButton(Button button) {
         button.setStyle(button.getStyle() + ";-fx-border-color: yellow;");
+    }
+    public boolean isHighlighted(Button button)
+    {
+        if(button.getStyle().contains("yellow"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public void unHighLightGameButton(String letter)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                if(button.getText().equalsIgnoreCase(letter))
+                {
+                    unHighlightGameButton(button);
+                }
+            }
+        }
     }
     public void unHighlightGameButton(Button button)
     {
@@ -615,20 +658,22 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void handleKeyPressedEvents()
     {
-        runningWord = "";
         app.getGUI().getPrimaryScene().setOnKeyTyped((KeyEvent event) -> {
             if(event.getCharacter().equalsIgnoreCase("\r")){
                 System.out.println("enter key pressed");
+                recentLetter = "";
+                apexLetter = "";
                 checkIfWordFound(runningWord);
                 return;
             }
             if(event.getCharacter().equals("\b")){
-                System.out.println("backspace key pressed");
-                checkIfWordFound(runningWord);
+                statsBoardSingleton.backspace();
+                unHighLightGameButton(runningWord.charAt(runningWord.length()-1) +"");
+                runningWord = runningWord.substring(0,runningWord.length()-1);
                 return;
             }
             String a = event.getCharacter().charAt(0)+"";
-            SelectLettersByLetter(a.toUpperCase());
+            SelectLettersByLetter(a.toUpperCase(),recentButton);
             runningWord += a;
             statsBoardSingleton.updateCurrentLetters(a);
         });
@@ -660,34 +705,77 @@ public class Workspace extends AppWorkspaceComponent {
         //statsBoardSingleton.showMissingWords(wordsInGrid);
         statsBoardSingleton.displayReplayButton();
     }
-    public void checkAdjacentLetters(String a, String b)
+    public void printAdjacentLetters(String recentLetters, String newLetter)
     {
         for(int i = 0; i < 4; i++)
         {
             for(int j= 0; j < 4; j++)
             {
                 Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
-                if(button.getText().equalsIgnoreCase(""))
+                if(button.getText().equalsIgnoreCase(recentLetters))
                 {
-                    button.setText(generateRandomLetter().toLowerCase());
+                    Button up    = (Button)getNodeByRowColumnIndex(i+1, j, gameBoard);
+                    if(checkIfExists(gameBoard,i+1,j))
+                    {
+                        if(up.getText().equalsIgnoreCase(newLetter) && isHighlighted(button))
+                        {
+                            highlightGameButton(up);
+                        }
+                    }
+                    Button down  = (Button)getNodeByRowColumnIndex(i-1, j, gameBoard);
+                    if(checkIfExists(gameBoard,i-1,j))
+                    {
+                        if(down.getText().equalsIgnoreCase(newLetter) && isHighlighted(button))
+                        {
+                            highlightGameButton(down);
+                        }
+                    }
+                    Button left  = (Button)getNodeByRowColumnIndex(i, j+1, gameBoard);
+                    if(checkIfExists(gameBoard,i,j+1))
+                    {
+                        if(left.getText().equalsIgnoreCase(newLetter) && isHighlighted(button)) {
+                            highlightGameButton(left);
+                        }
+                    }
+                    Button right = (Button)getNodeByRowColumnIndex(i, j-1, gameBoard);
+                    if(checkIfExists(gameBoard,i+1,j-1))
+                    {
+                        if(right.getText().equalsIgnoreCase(newLetter) && isHighlighted(button)) {
+                            highlightGameButton(right);
+                        }
+                    }
+
                 }
             }
         }
     }
-    public void SelectLettersByLetter(String letter)
+    public void SelectLettersByLetter(String newLetter, Button recentButton)
     {
-        letter = letter.toLowerCase();
+        newLetter = newLetter.toLowerCase();
         for(int i = 0; i < 4; i++)
         {
             for(int j= 0; j < 4; j++)
             {
                 Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
-                if(button.getText().contains(letter))
+                if(button.getText().contains(newLetter))
                 {
-                    highlightGameButton(button);
+                    if(apexLetter.equalsIgnoreCase(""))
+                    {
+                        highlightGameButton(button);
+                        recentLetter = button.getText();
+                        System.out.println("FIRST recent letter is now " + recentLetter);
+                    }
+                    else {
+                        printAdjacentLetters(recentLetter, newLetter);
+                        recentLetter = button.getText();
+                        System.out.println("recent letter is now " + recentLetter);
+                        return;
+                    }
+
                 }
             }
         }
+        apexLetter = newLetter;
     }
     public void clearboard()
     {

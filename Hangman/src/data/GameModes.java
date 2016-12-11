@@ -13,7 +13,7 @@ public class GameModes extends HashMap<String,GameMode>
     }
     public void initializeGameModes()
     {
-        GameMode general = new GameMode("presidents",1);
+        GameMode general = new GameMode("general",1);
         this.put("general",general);
 
         GameMode animals = new GameMode("animals",1);

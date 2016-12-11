@@ -23,9 +23,13 @@ public class StatsBoardSingleton
     private VBox guessedWordsPane;
     private HBox totalPointsPane;
     private HBox targetPoints;
+    private HBox gameEndPane;
     private Button pauseButton;
     private Button resumeButton;
     private Button replayButton;
+    private Button nextLevelButton;
+
+    private int currentIndex = 0;
 
 
     Label targetPointsLabel = null;
@@ -54,6 +58,7 @@ public class StatsBoardSingleton
         pauseButton = this.createPauseButton();
         resumeButton = this.createResumeButton();
         replayButton = this.createReplayButton();
+        nextLevelButton = this.createNextLevelButton();
 
         statsBoard = new VBox();
         statsBoard.setMinWidth(500);
@@ -69,6 +74,9 @@ public class StatsBoardSingleton
         pointsPane.setMargin(guessedWordsPane, new Insets(0,20,0,20));
         pointsPane.setMargin(totalPointsPane,  new Insets(0,20,0,20));
 
+        gameEndPane = new HBox();
+        gameEndPane.getChildren().addAll(replayButton,nextLevelButton);
+
         statsBoard.getChildren().add(previousBestLabel);
         statsBoard.getChildren().add(timerPane);
         statsBoard.getChildren().add(currentLettersPane);
@@ -81,7 +89,7 @@ public class StatsBoardSingleton
         statsBoard.setMargin(pointsPane,         new Insets(0,0,40,25));
         statsBoard.setMargin(targetPoints,       new Insets(0,0,20,40));
         statsBoard.setMargin(resumeButton,       new Insets(0,0,40,40));
-        statsBoard.setMargin(replayButton,       new Insets(0,0,40,40));
+
 
         pauseButton.setOnAction(event -> {
             this.pauseGame();
@@ -93,6 +101,11 @@ public class StatsBoardSingleton
         replayButton.setOnAction(event -> {
             ReplayGameHandler replayHandler = new ReplayGameHandler(app);
             replayHandler.handle(new ActionEvent());
+        });
+        nextLevelButton.setOnAction(event -> {
+            Workspace workspace = (Workspace)app.getWorkspaceComponent();
+            workspace.iterateLevel();
+            workspace.generateNewGameBoard(workspace.getCurrentGameMode());
         });
 
         updateTargetPoints(100);
@@ -112,7 +125,7 @@ public class StatsBoardSingleton
         statsBoard.getChildren().add(currentLettersPane);
         statsBoard.getChildren().add(pointsPane);
         statsBoard.getChildren().add(targetPoints);
-        statsBoard.getChildren().add(replayButton);
+        statsBoard.getChildren().add(gameEndPane);
     }
     public void removeReplayButton()
     {
@@ -123,6 +136,14 @@ public class StatsBoardSingleton
         statsBoard.getChildren().add(pointsPane);
         statsBoard.getChildren().add(targetPoints);
         statsBoard.getChildren().add(pauseButton);
+    }
+    public void backspace()
+    {
+        currentlySelectedLetters = currentlySelectedLetters.substring(0,currentlySelectedLetters.length() - 2);
+        Label label = new Label(currentlySelectedLetters);
+        label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
+        currentLettersPane.getChildren().clear();
+        currentLettersPane.getChildren().add(label);
     }
     public void pauseGame()
     {
@@ -241,6 +262,7 @@ public class StatsBoardSingleton
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
         currentLettersPane.getChildren().clear();
         currentLettersPane.getChildren().add(label);
+
     }
     public void clearLetters()
     {
@@ -323,7 +345,15 @@ public class StatsBoardSingleton
         Button button = new Button("Replay Level");
         button.setMinHeight(50);
         button.setMinWidth(100);
-        button.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        button.setStyle("-fx-font-size: 25px;-fx-background-color: white;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
+        return button;
+    }
+    public Button createNextLevelButton()
+    {
+        Button button = new Button("next level");
+        button.setMinHeight(50);
+        button.setMinWidth(100);
+        button.setStyle("-fx-font-size: 25px;-fx-background-color: white;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
         return button;
     }
 
