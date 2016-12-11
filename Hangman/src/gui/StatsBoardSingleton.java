@@ -80,18 +80,17 @@ public class StatsBoardSingleton
         statsBoard.setMargin(currentLettersPane, new Insets(0,0,20,20));
         statsBoard.setMargin(pointsPane,         new Insets(0,0,40,25));
         statsBoard.setMargin(targetPoints,       new Insets(0,0,20,40));
-        statsBoard.setMargin(pauseButton,        new Insets(0,0,40,40));
         statsBoard.setMargin(resumeButton,       new Insets(0,0,40,40));
         statsBoard.setMargin(replayButton,       new Insets(0,0,40,40));
 
-        PauseGameHandler handler = new PauseGameHandler(app);
-        pauseButton.setOnAction(handler);
+        pauseButton.setOnAction(event -> {
+            this.pauseGame();
+        });
 
         resumeButton.setOnAction(event ->{
             this.resumeGame();
         });
         replayButton.setOnAction(event -> {
-            this.removeReplayButton();
             ReplayGameHandler replayHandler = new ReplayGameHandler(app);
             replayHandler.handle(new ActionEvent());
         });
@@ -102,22 +101,43 @@ public class StatsBoardSingleton
     public void updatePreviousBestPane(String previousBest)
     {
         this.previousBest = previousBest;
-        this.previousBestLabel.setText("Previous best" + previousBest);
+        previousBestLabel.setStyle("-fx-font-size: 25px;");
+        this.previousBestLabel.setText("Previous best: " + previousBest);
     }
     public void displayReplayButton()
     {
-        statsBoard.getChildren().remove(pauseButton);
-        statsBoard.getChildren().add(this.replayButton);
+        statsBoard.getChildren().clear();
+        statsBoard.getChildren().add(previousBestLabel);
+        statsBoard.getChildren().add(timerPane);
+        statsBoard.getChildren().add(currentLettersPane);
+        statsBoard.getChildren().add(pointsPane);
+        statsBoard.getChildren().add(targetPoints);
+        statsBoard.getChildren().add(replayButton);
     }
     public void removeReplayButton()
     {
-        statsBoard.getChildren().remove(this.replayButton);
+        statsBoard.getChildren().clear();
+        statsBoard.getChildren().add(previousBestLabel);
+        statsBoard.getChildren().add(timerPane);
+        statsBoard.getChildren().add(currentLettersPane);
+        statsBoard.getChildren().add(pointsPane);
+        statsBoard.getChildren().add(targetPoints);
         statsBoard.getChildren().add(pauseButton);
     }
     public void pauseGame()
     {
-        statsBoard.getChildren().remove(pauseButton);
-        statsBoard.getChildren().add(resumeButton);
+        try
+        {
+            statsBoard.getChildren().remove(pauseButton);
+            statsBoard.getChildren().add(resumeButton);
+        }
+        catch(Exception e)
+        {
+            System.out.println("the resume button is already there somehow");
+        }
+        Workspace workspace = (Workspace)app.getWorkspaceComponent();
+        workspace.pauseGame();
+        ct.pauseTimer();
     }
     public void resumeGame()
     {
@@ -125,6 +145,7 @@ public class StatsBoardSingleton
         statsBoard.getChildren().add(pauseButton);
         Workspace workspace = (Workspace) app.getWorkspaceComponent();
         workspace.resumeGame();
+        ct.continueTimer();
     }
     public void showMissingWords(String[] wordsInGrid)
     {

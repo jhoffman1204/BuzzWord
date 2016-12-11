@@ -94,7 +94,10 @@ public class User
     public void levelCompleted(String gameMode, int level, int score)
     {
         gamemodes.get(gameMode).getSpecificGameModeLevel(level).setCompleted(true);
-        gamemodes.get(gameMode).getSpecificGameModeLevel(level).setPersonalBest(score);
+        if(gamemodes.get(gameMode).getSpecificGameModeLevel(level).getPersonalBest() < score)
+        {
+            gamemodes.get(gameMode).getSpecificGameModeLevel(level).setPersonalBest(score);
+        }
 
     }
 }

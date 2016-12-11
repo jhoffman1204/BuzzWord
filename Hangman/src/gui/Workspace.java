@@ -14,8 +14,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -24,6 +28,8 @@ import propertymanager.PropertyManager;
 import ui.AppGUI;
 import ui.YesNoCancelDialogSingleton;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Random;
 
@@ -317,11 +323,21 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void replayLevel()
     {
+        statsBoardSingleton.removeReplayButton();
         gameModeLabel.setText(currentGameMode + "level " + currentLevel);
         generateNewGameBoard(currentGameMode);
     }
     public void generateNewGameBoard(String vocab)
     {
+        int wordLength = 0;
+        if(vocab.equalsIgnoreCase("animals") || vocab.equalsIgnoreCase("general"))
+        {
+            wordLength = 3;
+        }
+        else
+        {
+                wordLength = 4;
+        }
         clearboard();
         statsBoardSingleton.resetStatBar();
         try
@@ -335,13 +351,14 @@ public class Workspace extends AppWorkspaceComponent {
         //The amount of time the user will have to complete the level
         statsBoardSingleton.startTimer(10);
         clearWordsInGrid();
-        if(randomInsert(vocab,5) == false) {
+        if(randomInsert(vocab,wordLength) == false) {
             return;
         }
-        if(randomInsert(vocab,5) == false) {
+        if(randomInsert(vocab,wordLength) == false) {
             return;
         }
-        if(randomInsert(vocab,5) == false) {
+        wordLength++;
+        if(randomInsert(vocab,wordLength) == false) {
             return;
         }
         fillInBoard();
@@ -382,14 +399,7 @@ public class Workspace extends AppWorkspaceComponent {
         menuPane.setMargin(changeColorButton,new Insets(80,0,0,50));
         menuPane.setMargin(logoutButton,     new Insets(80,0,0,50));
     }
-    public void statBoardMargins()
-    {
 
-    }
-    public void countDownTimer()
-    {
-
-    }
     /**
      * These represent the states of the game, they are able to be called and have the appropriate workspace, but the
      * data for the workspace will be provided by the hangmancontroller, based on what the user chooses
@@ -561,23 +571,25 @@ public class Workspace extends AppWorkspaceComponent {
     {
         runningWord = "";
         app.getGUI().getPrimaryScene().setOnKeyTyped((KeyEvent event) -> {
+            if(event.getCharacter().equalsIgnoreCase("\r")){
+                System.out.println("enter key pressed");
+                checkIfWordFound(runningWord);
+                return;
+            }
+            if(event.getCharacter().equals("\b")){
+                System.out.println("backspace key pressed");
+                checkIfWordFound(runningWord);
+                return;
+            }
             String a = event.getCharacter().charAt(0)+"";
             SelectLettersByLetter(a.toUpperCase());
             runningWord += a;
-            for(int i = 0; i < wordsInGrid.length; i++)
-            {
-                if(runningWord.equalsIgnoreCase(wordsInGrid[i]))
-                {
-                    unHighlightAllGameButtons();
-                    runningWord = "";
-                }
-            }
+            statsBoardSingleton.updateCurrentLetters(a);
         });
     }
     public void pauseGame()
     {
         gameBoard.setVisible(false);
-        statsBoardSingleton.pauseGame();
     }
     public void resumeGame()
     {
@@ -763,6 +775,7 @@ public class Workspace extends AppWorkspaceComponent {
                 }
             }
         } catch (IOException e) {
+            System.out.println("THE ERROR IS HERE");
             e.printStackTrace();
         }
         return true;

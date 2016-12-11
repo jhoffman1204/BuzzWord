@@ -157,10 +157,8 @@ public class HangmanController implements FileController {
         try {
             currentUser = jsonLoader.readValue(new File(".\\Hangman\\src\\data\\" + username + ".json"), User.class);
             if(password.contains(currentUser.getUserPassWord())) {
-
-                completedLevel("general",1,1);
-                completedLevel("animals",1,1);
-                completedLevel("countries",1,1);
+                Workspace workspace = (Workspace) appTemplate.getWorkspaceComponent();
+                workspace.enableLevelSelectionNode(1);
             }
             else
             {
@@ -197,14 +195,21 @@ public class HangmanController implements FileController {
             randomWordIndex = random.nextInt(generalVocabLength);
             word = generalVocab[randomWordIndex];
         }
-        if(word.length() != wordLength)
+        try
         {
-            return generateRandomWordFromFile(wordBankName,wordLength);
+            if(word.length() != wordLength)
+            {
+                System.out.println("word lengths did not match");
+                return generateRandomWordFromFile(wordBankName,wordLength);
+            }
         }
-        else
+        catch(Exception e)
         {
-            return word;
+            System.out.println("There was a problem");
+            System.out.println(word.length());
+            System.out.println(wordLength);
         }
+        return word;
     }
     public String[] generateWordBank(String fileName, int fileLength) throws IOException {
         FileInputStream fis = new FileInputStream("Hangman/resources/words/" + fileName + ".txt");

@@ -3,20 +3,10 @@ import apptemplate.AppTemplate;
 import controller.GameEndHandler;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
@@ -24,9 +14,9 @@ import javafx.util.Duration;
  */
 public class CountDownTimer
 {
-    private Timeline timeline;
-    private Label timerLabel = new Label();
-    private Integer timeSeconds = 0;
+    private Timeline timer;
+    private Label timeRemainingLabel = new Label();
+    private Integer timeRemaining = 0;
     private AppTemplate app;
 
     public CountDownTimer(AppTemplate app)
@@ -36,28 +26,28 @@ public class CountDownTimer
     public HBox createCountdownPane() {
 
         // Configure the Label
-        timerLabel.setText(timeSeconds.toString());
-        timerLabel.setStyle("-fx-font-size: 40px;");
+        timeRemainingLabel.setText(timeRemaining.toString());
+        timeRemainingLabel.setStyle("-fx-font-size: 40px;");
 
 
-        if (timeline != null) {
-            timeline.stop();
-        }
-        timeSeconds = 0;
+//        if (timer != null) {
+//            timer.stop();
+//        }
+        timeRemaining = 0;
 
-        // update timerLabel
-        timerLabel.setText(timeSeconds.toString());
-        timeline = new Timeline();
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.getKeyFrames().add(
+        // update timeRemainingLabel
+        timeRemainingLabel.setText(timeRemaining.toString());
+        timer = new Timeline();
+        timer.setCycleCount(Timeline.INDEFINITE);
+        timer.getKeyFrames().add(
                 new KeyFrame(Duration.seconds(1),
                         event1 ->  {
-                            timeSeconds--;
-                            // update timerLabel
-                            timerLabel.setText(
-                                    timeSeconds.toString());
-                            if (timeSeconds <= 0) {
-                                timeline.stop();
+                            timeRemaining--;
+                            // update timeRemainingLabel
+                            timeRemainingLabel.setText(
+                                    timeRemaining.toString());
+                            if (timeRemaining <= 0) {
+                                timer.stop();
                                 GameEndHandler handler = new GameEndHandler(this.app);
                                 handler.handle(new ActionEvent());
                             }
@@ -73,13 +63,21 @@ public class CountDownTimer
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 30px;");
 
         pane.setMargin(label, new Insets(15,0,0,15));
-        pane.setMargin(timerLabel, new Insets(10,0,0,0));
-        pane.getChildren().addAll(label, timerLabel);
+        pane.setMargin(timeRemainingLabel, new Insets(10,0,0,0));
+        pane.getChildren().addAll(label, timeRemainingLabel);
         return pane;
+    }
+    public void pauseTimer()
+    {
+        timer.pause();
+    }
+    public void continueTimer()
+    {
+        timer.play();
     }
     public void beginTimer(int time)
     {
-        timeSeconds  = time;
-        timeline.playFromStart();
+        timeRemaining = time;
+        timer.playFromStart();
     }
 }
