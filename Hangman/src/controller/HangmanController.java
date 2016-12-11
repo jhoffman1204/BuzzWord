@@ -38,7 +38,7 @@ public class HangmanController implements FileController {
     private String[] countriesVocab;
     private int countriesVocabLength = 37;
     private String[] generalVocab;
-    private int generalVocabLength = 152;
+    private int generalVocabLength = 151;
 
     Random random = new Random();
     public HangmanController(AppTemplate appTemplate, Button gameButton) {
@@ -58,9 +58,23 @@ public class HangmanController implements FileController {
     {
         return currentUser.getGamemodes().get(gameModeTitle).getSpecificGameModeLevel(level);
     }
-    public void savePassword()
+    public void scanBoardForWords()
     {
-
+        Workspace workspace = (Workspace)appTemplate.getWorkspaceComponent();
+        //workspace.detectWords(animalsVocab,"");
+        if(workspace.getCurrentGameMode().equalsIgnoreCase("animals"))
+        {
+            workspace.detectWords(animalsVocab,"");
+        }
+        if(workspace.getCurrentGameMode().equalsIgnoreCase("general"))
+        {
+            workspace.detectWords(generalVocab,"");
+        }
+        if(workspace.getCurrentGameMode().equalsIgnoreCase("countries"))
+        {
+            workspace.detectWords(countriesVocab,"");
+        }
+        workspace.printWordsDetected();
     }
     public String encrpyPassword(String password)
     {

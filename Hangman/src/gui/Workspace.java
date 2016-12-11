@@ -74,6 +74,7 @@ public class Workspace extends AppWorkspaceComponent {
     String currentUserName;
     String currentPassword;
 
+
     String currentGameMode;
     int    currentLevel;
 
@@ -82,6 +83,8 @@ public class Workspace extends AppWorkspaceComponent {
     Label targetPointsLabel;
     String[] wordsInGrid = new String[10];
     boolean[] wordsFound  = new boolean[10];
+
+    public String[] wordsDetected = new String[10];
 
     int currentVocabLength;
 
@@ -136,7 +139,9 @@ public class Workspace extends AppWorkspaceComponent {
         this.menuPane = menuPane;
     }
 
-
+    public String getCurrentGameMode() {
+        return currentGameMode;
+    }
     private void layoutGUI() {
         try {
             bodyPane = new VBox();
@@ -179,6 +184,8 @@ public class Workspace extends AppWorkspaceComponent {
             loginAccount = this.createLoginScreen();
             levelSelectBoard = this.createLevelSelection("AnimalsVocab");
             logoutButton = node.createLogoutnButton();
+
+            handleShortCuts();
 
             gamePlayPane.setMargin(levelSelectBoard,new Insets(30,0,0,100));
             selectLevel.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -235,7 +242,6 @@ public class Workspace extends AppWorkspaceComponent {
                    // controller.generateRandomWordFromFile("AnimalsVocab",135);
                    // controller.generateRandomWordFromFile("generalVocab",300000,4);
                     //insertWordsIntoGameBoard("AnimalsVocab");
-                    controller.savePassword();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -329,6 +335,7 @@ public class Workspace extends AppWorkspaceComponent {
     }
     public void generateNewGameBoard(String vocab)
     {
+        resetWordsFound();
         int wordLength = 0;
         if(vocab.equalsIgnoreCase("animals") || vocab.equalsIgnoreCase("general"))
         {
@@ -366,6 +373,15 @@ public class Workspace extends AppWorkspaceComponent {
         printWordsInGrid();
         gameWon = false;
         gameBoard.setDisable(false);
+        controller.scanBoardForWords();
+        updateWordBank();
+    }
+    public void updateWordBank()
+    {
+        for(int i = 0 ; i < wordsInGrid.length; i++)
+        {
+            wordsInGrid[i] = wordsDetected[i];
+        }
     }
     public void randomizeColorPalette()
     {
@@ -554,6 +570,13 @@ public class Workspace extends AppWorkspaceComponent {
             }
         }
     }
+    public void resetWordsFound()
+    {
+        for(int i = 0 ; i < 10; i++)
+        {
+            wordsFound[i] = false;
+        }
+    }
     public void printFound()
     {
         String[] wordsNotFound = new String[10];
@@ -566,6 +589,29 @@ public class Workspace extends AppWorkspaceComponent {
         }
         statsBoardSingleton.addNotFoundWordsToList(wordsNotFound);
 
+    }
+    public void handleShortCuts()
+    {
+        app.getGUI().getPrimaryScene().setOnKeyTyped((KeyEvent event) -> {
+                if(event.getCharacter().equalsIgnoreCase("L"))
+                {
+                    gamePlayPane.getChildren().clear();
+                    menuPane.getChildren().clear();
+                    menuPane.getChildren().addAll(exitButton,backButton);
+                    gamePlayPane.getChildren().addAll(loginAccount);
+                }
+                if(event.getCharacter().equalsIgnoreCase("C"))
+                {
+                    gamePlayPane.getChildren().clear();
+                    menuPane.getChildren().clear();
+                    menuPane.getChildren().addAll(exitButton,homeButton);
+                    gamePlayPane.getChildren().addAll(createAccount);
+                }
+                if(event.getCharacter().equalsIgnoreCase("H"))
+                {
+                    System.out.println("help viewed");
+                }
+            });
     }
     public void handleKeyPressedEvents()
     {
@@ -672,7 +718,127 @@ public class Workspace extends AppWorkspaceComponent {
         for(int i = 0 ;i < wordsInGrid.length; i++)
         {
             wordsInGrid[i] = null;
+            wordsDetected[i] = null;
         }
+    }
+    public void checkIfCompleteWord()
+    {
+
+    }
+    public void detectWords(String[] wordBank, String currentDetectedWord)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            for(int j= 0; j < 4; j++)
+            {
+                Button button = (Button)getNodeByRowColumnIndex(i, j, gameBoard);
+                detectHelper(button, wordBank,button.getText(),i,j);
+            }
+        }
+    }
+    public void detectHelper(Button button, String[] wordBank, String currentDetectedWord, int xCoor, int yCoor)
+    {
+        checkIfCompleteWord(currentDetectedWord, wordBank);
+        //button = (Button)getNodeByRowColumnIndex(xCoor, yCoor, gameBoard);
+        if(checkIfExists(gameBoard,xCoor + 1,yCoor))
+        {
+            Button b = (Button) getNodeByRowColumnIndex(xCoor + 1, yCoor, gameBoard);
+            if(containInArray(wordBank,currentDetectedWord + b.getText()))
+            {
+                detectHelper(b, wordBank,currentDetectedWord + b.getText() , xCoor + 1, yCoor);
+                //System.out.println(currentDetectedWord);
+            }
+            else{
+
+            }
+        }
+        if(checkIfExists(gameBoard,xCoor - 1,yCoor))
+        {
+            Button b = (Button) getNodeByRowColumnIndex(xCoor - 1, yCoor, gameBoard);
+            if(containInArray(wordBank,currentDetectedWord + b.getText()))
+            {
+                detectHelper(b, wordBank,currentDetectedWord + b.getText(), xCoor - 1, yCoor);
+                //System.out.println(currentDetectedWord);
+            }
+            else{
+
+            }
+        }
+        if(checkIfExists(gameBoard,xCoor,yCoor + 1))
+        {
+            Button b = (Button) getNodeByRowColumnIndex(xCoor , yCoor + 1, gameBoard);
+            if(containInArray(wordBank,currentDetectedWord+ b.getText()))
+            {
+                detectHelper(b, wordBank,currentDetectedWord+ b.getText(), xCoor, yCoor + 1);
+                //System.out.println(currentDetectedWord);
+            }
+            else{
+
+            }
+        }
+        if(checkIfExists(gameBoard,xCoor,yCoor-1))
+        {
+            Button b = (Button) getNodeByRowColumnIndex(xCoor, yCoor - 1, gameBoard);
+            if(containInArray(wordBank,currentDetectedWord+ b.getText()))
+            {
+                detectHelper(b, wordBank,currentDetectedWord + b.getText(), xCoor , yCoor - 1);
+                //System.out.println(currentDetectedWord);
+            }
+            else{
+
+            }
+        }
+        return;
+    }
+    public void checkIfCompleteWord(String word, String[] wordBank)
+    {
+        for(int i = 0 ; i < wordBank.length; i++)
+        {
+            if(wordBank[i].equalsIgnoreCase(word))
+            {
+                for(int j = 0; j < wordsDetected.length; j++)
+                {
+                    if(wordsDetected[j] == null)
+                    {
+                        if(alreadyInArray(wordsDetected,word)) {
+                            wordsDetected[j] = word;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public boolean alreadyInArray(String[] array, String word)
+    {
+        for(int i = 0; i < array.length; i++)
+        {
+            if(array[i] != null) {
+                if (array[i].equalsIgnoreCase(word)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public void printWordsDetected()
+    {
+        for(int i = 0 ; i < wordsDetected.length; i++)
+        {
+            if(wordsDetected[i] != null)
+            {
+                System.out.println(wordsDetected[i]);
+            }
+        }
+    }
+    public boolean containInArray(String[] array, String word)
+    {
+        for(int i = 0 ; i < array.length; i++)
+        {
+             if(array[i].contains(word)){
+                 return true;
+             }
+        }
+        return false;
     }
     public boolean randomInsert(String vocabList, int wordLength)
     {
@@ -770,7 +936,6 @@ public class Workspace extends AppWorkspaceComponent {
                     System.out.println("a word has been added");
                     System.out.println(i);
                     wordsInGrid[i] = word;
-                    System.out.println(wordsInGrid[i]);
                     break;
                 }
             }
@@ -788,6 +953,22 @@ public class Workspace extends AppWorkspaceComponent {
             {
                 System.out.println((1+i) + ") " + wordsInGrid[i]);
             }
+        }
+    }
+    public boolean checkIfExists(GridPane gameBaord, int xCoor, int yCoor)
+    {
+        try
+        {
+            Button button = (Button) getNodeByRowColumnIndex(xCoor, yCoor, gameBoard);
+            if(button.getText().equalsIgnoreCase(""))
+            {
+                return false;
+            }
+            return true;
+        }
+        catch(Exception e)
+        {
+            return false;
         }
     }
     public boolean checkIfNullOnGameBoard(GridPane gameBoard, int xCoor, int yCoor)
