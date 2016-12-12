@@ -117,6 +117,14 @@ public class StatsBoardSingleton
         previousBestLabel.setStyle("-fx-font-size: 25px;");
         this.previousBestLabel.setText("Previous best: " + previousBest);
     }
+    public void disableNextLevel()
+    {
+        nextLevelButton.setDisable(true);
+    }
+    public void enableNextLevel()
+    {
+        nextLevelButton.setDisable(false);
+    }
     public void displayReplayButton()
     {
         statsBoard.getChildren().clear();
@@ -159,6 +167,7 @@ public class StatsBoardSingleton
         Workspace workspace = (Workspace)app.getWorkspaceComponent();
         workspace.pauseGame();
         ct.pauseTimer();
+
     }
     public void resumeGame()
     {
@@ -212,7 +221,7 @@ public class StatsBoardSingleton
     {
         this.guessedWordsPane.getChildren().clear();
         this.currentLettersPane.getChildren().clear();
-        updateTotalPoints(0);
+        resetTotalPoints();
     }
     public int getTotalPoints()
     {
@@ -250,6 +259,14 @@ public class StatsBoardSingleton
     public void updateTotalPoints(int points)
     {
         this.totalPoints+= points;
+        totalPointsPane.getChildren().clear();
+        Label label = new Label("Total" + "                                          " + totalPoints);
+        label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
+        totalPointsPane.getChildren().add(label);
+    }
+    public void resetTotalPoints()
+    {
+        this.totalPoints = 0;
         totalPointsPane.getChildren().clear();
         Label label = new Label("Total" + "                                          " + totalPoints);
         label.setStyle("-fx-font-weight: bold;-fx-font-size: 25px;");
@@ -314,12 +331,12 @@ public class StatsBoardSingleton
         pauseButton.setMinHeight(50);
         pauseButton.setMinWidth(100);
         pauseButton.setStyle("-fx-font-size: 25px;-fx-background-color: red;-fx-border-color: black;-fx-border-width: 7px;-fx-border-insets: -5px");
-        pauseButton.setOnAction(event ->
-        {
-            //gameBoard.setVisible(false);
-            statsBoard.getChildren().remove(pauseButton);
-            statsBoard.getChildren().add(resumeButton);
-        });
+//        pauseButton.setOnAction(event ->
+//        {
+//            //gameBoard.setVisible(false);
+//            statsBoard.getChildren().remove(pauseButton);
+//            statsBoard.getChildren().add(resumeButton);
+//        });
 
         return pauseButton;
     }

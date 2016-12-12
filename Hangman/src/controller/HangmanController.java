@@ -34,7 +34,7 @@ public class HangmanController implements FileController {
     private int currentGameModeLevel;
 
     private String[] animalsVocab;
-    private int animalsVocabLength = 135;
+    private int animalsVocabLength = 133;
     private String[] countriesVocab;
     private int countriesVocabLength = 37;
     private String[] generalVocab;
@@ -72,6 +72,7 @@ public class HangmanController implements FileController {
         }
         if(workspace.getCurrentGameMode().equalsIgnoreCase("countries"))
         {
+            System.out.println("COUNTRIES DETECTED");
             workspace.detectWords(countriesVocab,"");
         }
         workspace.printWordsDetected();

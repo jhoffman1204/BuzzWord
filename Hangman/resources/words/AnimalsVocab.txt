@@ -1,7 +1,6 @@
 cat
 dog
 rat
-pup
 cow
 eel
 pig
@@ -19,7 +18,6 @@ hog
 sow
 man
 ape
-ewe
 cub
 ayu
 moa
