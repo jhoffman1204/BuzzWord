@@ -19,17 +19,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.shape.Line;
 import propertymanager.PropertyManager;
 import ui.AppGUI;
 import ui.YesNoCancelDialogSingleton;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.util.Random;
 
@@ -53,12 +49,13 @@ public class Workspace extends AppWorkspaceComponent {
     HBox        gamePlayPane;
     GridPane    createAccount;
     GridPane    loginAccount;
+    GridPane    changeUserInformation;
     GridPane    levelSelectBoard;
     //
     Button      createButton;
     Button      loginButton;
     Button      viewHelpButton;
-    Button      changeColorButton;
+    Button      changeUserInfoButton;
     Button      homeButton;
     Button      logoutButton;
     Button      playerProfileButton;
@@ -185,12 +182,13 @@ public class Workspace extends AppWorkspaceComponent {
             playerProfileButton = node.createPlayerProfileButton();
             createButton = node.createProfileButton();
             loginButton = node.createLoginButton();
-            changeColorButton = node.createChangeColor();
+            changeUserInfoButton = node.createChangeColor();
             viewHelpButton = node.createviewHelpButton();
             homeButton = node.createHomeButton();
             selectLevel =  node.createSelectLevel();
             createAccount = this.createProfileScreen();
             loginAccount = this.createLoginScreen();
+            changeUserInformation = this.createChangeUserInfo();
             levelSelectBoard = this.createLevelSelection("AnimalsVocab");
             logoutButton = node.createLogoutnButton();
 
@@ -246,23 +244,59 @@ public class Workspace extends AppWorkspaceComponent {
             });
             viewHelpButton.setOnAction(event -> {
                 try {
-                   // controller.start();
-                   // controller.generateRandomWordFromFile("CountriesVocab",35);
-                   // controller.generateRandomWordFromFile("AnimalsVocab",135);
-                   // controller.generateRandomWordFromFile("generalVocab",300000,4);
-                    //insertWordsIntoGameBoard("AnimalsVocab");
+                    ScrollPane pane = new ScrollPane();
+                    pane.setMaxSize(700,300);
+                    pane.setHmax(100);
+                    pane.setVmax(100);
+                    pane.setContent(new Label(
+                            "Hello and Welcome to BuzzWord, created by James Hoffman" +
+                            "\n\nWhat do you need to know?" +
+                            "\n1) First you want to either create an account or log in, dont worry, your password is encrypted" +
+                                    "\n\n then you want to select a game mode, hitting the game level will start the game" +
+                                    "\nHOW TO PLAY:" +
+                                    "\n1) Type in words that you see on the grid and press enter" +
+                                    "\n2) Alternatively, you can drag the mouse over words you wnat, and it will detect words for you" +
+                                    "\n3) Play until the time runs out, and beat all the scores for the levels in each of the three game modes" +
+                                    "\n\nHAVE FUN!!!" +
+                                    "\n\nINFO ABOUT THE CREATOR" +
+                                    "\nI created this game in my 219 class for Richard Mckenna" +
+                                    "\nIt uses the JFXFramework that he provided us with" +
+                                    "\nUsers passwords are encrypted so that no one can steal your information"+
+                                    "\n\nWhat do you need to know?" +
+                                    "\n1) First you want to either create an account or log in, dont worry, your password is encrypted" +
+                                    "\n\n then you want to select a game mode, hitting the game level will start the game" +
+                                    "\nHOW TO PLAY:" +
+                                    "\n1) Type in words that you see on the grid and press enter" +
+                                    "\n2) Alternatively, you can drag the mouse over words you wnat, and it will detect words for you" +
+                                    "\n3) Play until the time runs out, and beat all the scores for the levels in each of the three game modes" +
+                                    "\n\nHAVE FUN!!!" +
+                                    "\n\nINFO ABOUT THE CREATOR" +
+                                    "\nI created this game in my 219 class for Richard Mckenna" +
+                                    "\nIt uses the JFXFramework that he provided us with" +
+                                    "\nUsers passwords are encrypted so that no one can steal your information"));
+                    //pane.setMinSize(500,500);
+                    gamePlayPane.setMargin(pane, new Insets(0,0,0,50));
 
 
+                    gamePlayPane.getChildren().clear();
+                    menuPane.getChildren().clear();
+                    menuPane.getChildren().addAll(exitButton,backButton);
+                    gamePlayPane.getChildren().addAll(pane);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
-            changeColorButton.setOnAction(e ->
+            changeUserInfoButton.setOnAction(e ->
             {
-                randomizeColorPalette();
-                fillInBoard();
+
+                gamePlayPane.getChildren().clear();
+                menuPane.getChildren().clear();
+                menuPane.getChildren().addAll(exitButton,backButton);
+                gamePlayPane.getChildren().addAll(changeUserInformation);
+
             });
             logoutButton.setOnAction(event -> {
+                controller.saveUserInformation();
                 loginScreen();
                 this.userName = "";
             });
@@ -295,12 +329,14 @@ public class Workspace extends AppWorkspaceComponent {
             });
             homeButton.setOnAction(event -> {
                 homeScreen();
+                unHighlightAllGameButtons();
+                statsBoardSingleton.stopTimer();
             });
             backButton.setOnAction(event -> loginScreen());
 
-            menuPane.getChildren().addAll(selectLevel,createButton,loginButton,viewHelpButton,changeColorButton);
+            menuPane.getChildren().addAll(selectLevel,createButton,loginButton,viewHelpButton, changeUserInfoButton);
             this.setPaneMargins();
-            changeColorButton.setAlignment(Pos.BASELINE_LEFT);
+            changeUserInfoButton.setAlignment(Pos.BASELINE_LEFT);
             menuPane.setPadding(new Insets(0,50,0,0));
             menuPane.setStyle("-fx-background-color: #FA7C92;-fx-border-color: black;-fx-border-width: 7px;");
 
@@ -373,7 +409,7 @@ public class Workspace extends AppWorkspaceComponent {
             System.out.println("there was no previous best");
         }
         //The amount of time the user will have to complete the level
-        statsBoardSingleton.startTimer(50);
+        statsBoardSingleton.startTimer(15);
         clearWordsInGrid();
         recentButton = null;
         if(randomInsert(vocab,wordLength) == false) {
@@ -430,7 +466,7 @@ public class Workspace extends AppWorkspaceComponent {
         menuPane.setMargin(loginButton,      new Insets(80,0,0,50));
         menuPane.setMargin(viewHelpButton,   new Insets(80,0,0,50));
         menuPane.setMargin(homeButton,       new Insets(80,0,0,50));
-        menuPane.setMargin(changeColorButton,new Insets(80,0,0,50));
+        menuPane.setMargin(changeUserInfoButton,new Insets(80,0,0,50));
         menuPane.setMargin(logoutButton,     new Insets(80,0,0,50));
     }
 
@@ -443,15 +479,16 @@ public class Workspace extends AppWorkspaceComponent {
         menuPane.getChildren().clear();
         gameModeLabel.setText("Login or Create a New Profile");
         //this code is for testing purposes
-        menuPane.getChildren().addAll(exitButton,createButton,loginButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,createButton,loginButton,viewHelpButton, changeUserInfoButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
     }
     public void homeScreen()
     {
         menuPane.getChildren().clear();
+        gameBoard.setDisable(false);
         gameModeLabel.setText("Select a Level");
-        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton, changeUserInfoButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(gameBoard);
         selectLevel.getSelectionModel().selectFirst();
@@ -461,7 +498,7 @@ public class Workspace extends AppWorkspaceComponent {
         gamePlayPane.setMargin(levelSelectBoard,new Insets(30,0,0,100));
         menuPane.getChildren().clear();
         gameModeLabel.setText("Choose what level you want to play");
-        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,selectLevel,logoutButton,viewHelpButton, changeUserInfoButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().add(levelSelectBoard);
     }
@@ -470,7 +507,7 @@ public class Workspace extends AppWorkspaceComponent {
         this.currentTargetScore = controller.getTargetScore(level);
         menuPane.getChildren().clear();
         gameModeLabel.setText(currentGameMode + " level " + level);
-        menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton,changeColorButton);
+        menuPane.getChildren().addAll(exitButton,homeButton,logoutButton,viewHelpButton, changeUserInfoButton);
         gamePlayPane.getChildren().clear();
         gamePlayPane.getChildren().addAll(gameBoard,statsBoard);
         gameStarted = true;
@@ -652,7 +689,7 @@ public class Workspace extends AppWorkspaceComponent {
                 }
                 if(event.getCharacter().equalsIgnoreCase("H"))
                 {
-                    System.out.println("help viewed");
+                    viewHelpButton.fire();
                 }
             });
     }
@@ -1144,6 +1181,46 @@ public class Workspace extends AppWorkspaceComponent {
             {
                 homeScreen();
             }
+        });
+        pane.setMargin(title,new Insets(40,0,-20,40));
+        pane.setMargin(userNameLabel,new Insets(20,0,0,40));
+        pane.setMargin(userNameField,new Insets(20,0,0,20));
+        pane.setMargin(passwordLabel,new Insets(20,0,0,40));
+        pane.setMargin(passwordField,new Insets(20,0,0,20));
+        pane.setMargin(submit,new Insets(0,0,40,40));
+        pane.add(submit,0,3);
+        return pane;
+    }
+    public GridPane createChangeUserInfo()
+    {
+        GridPane pane = new GridPane();
+        pane.setMinWidth(600);
+        pane.setStyle("-fx-border-color: black;-fx-background-color: white;-fx-border-width: 4px;");
+        pane.setVgap(50);
+        pane.setHgap(50);
+        Label title = new Label("Change your account!");
+        title.setStyle("-fx-font-size: 25px;-fx-underline:true;");
+        pane.add(title,0,0);
+        Label userNameLabel = new Label("Enter New Username: ");
+        userNameLabel.setMinSize(200,50);
+        userNameLabel.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 2px;");
+        TextField userNameField = new TextField();
+        userNameField.setStyle("-fx-border-color: black;-fx-border-width: 2px;");
+        Label passwordLabel = new Label("Enter New Password: ");
+        passwordLabel.setMinSize(200,50);
+        passwordLabel.setStyle("-fx-font-size: 25px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 2px;");
+        PasswordField passwordField = new PasswordField();
+        passwordField.setStyle("-fx-border-color: black;-fx-border-width: 2px;");
+        pane.add(userNameLabel,0,1);
+        pane.add(userNameField,1,1);
+        pane.add(passwordLabel,0,2);
+        pane.add(passwordField,1,2);
+        CreateUserHandler handler = new CreateUserHandler(app,this);
+        Button submit = new Button("Login Profile!");
+        submit.setOnAction(event -> {
+            controller.changeUserInformation(userNameField.getText(),controller.encrpyPassword(passwordField.getText()));
+            homeScreen();
+
         });
         pane.setMargin(title,new Insets(40,0,-20,40));
         pane.setMargin(userNameLabel,new Insets(20,0,0,40));

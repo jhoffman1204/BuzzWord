@@ -90,7 +90,6 @@ lobo
 loon
 lynx
 mara
-mare
 mice
 mink
 mite
@@ -123,7 +122,7 @@ tahr
 teal
 tern
 tick
-titi
+mare
 toad
 topi
 tuna

@@ -115,7 +115,7 @@ public class WorkspaceNodeInitialization
     }
     public Button createChangeColor()
     {
-        Button button = new Button("Change Color Scheme");
+        Button button = new Button("Edit Acct Info");
         button.setMinHeight(50);
         button.setMinWidth(100);
         button.setStyle("-fx-font-size: 15px;-fx-background-color: #FFF7C0;-fx-border-color: black;-fx-border-width: 4px;-fx-border-insets: -2px");

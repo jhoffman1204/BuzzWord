@@ -212,7 +212,7 @@ public class StatsBoardSingleton
     {
         this.guessedWordsPane.getChildren().clear();
         this.currentLettersPane.getChildren().clear();
-        this.totalPoints = 0;
+        updateTotalPoints(0);
     }
     public int getTotalPoints()
     {
@@ -322,6 +322,10 @@ public class StatsBoardSingleton
         });
 
         return pauseButton;
+    }
+    public void stopTimer()
+    {
+        ct.pauseTimer();
     }
     public Button createResumeButton()
     {

@@ -34,7 +34,7 @@ public class HangmanController implements FileController {
     private int currentGameModeLevel;
 
     private String[] animalsVocab;
-    private int animalsVocabLength = 136;
+    private int animalsVocabLength = 135;
     private String[] countriesVocab;
     private int countriesVocabLength = 37;
     private String[] generalVocab;
@@ -151,6 +151,12 @@ public class HangmanController implements FileController {
         User newUser = new User(username,password);
         currentUser = newUser;
         out.println("a new user has been created with the username " + currentUser.getUserName() + " and password " + currentUser.getUserPassWord());
+        saveUserInformation();
+    }
+    public void changeUserInformation(String username, String password)
+    {
+        this.currentUser.setUserName(username);
+        this.currentUser.setUserPassWord(password);
         saveUserInformation();
     }
     public void saveUserInformation()
